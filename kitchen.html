@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kitchen Display System | Indian Food Forest</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Links (admin.css will contain KDS dark-mode grid styles) -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body kds-theme">
+
+    <!-- 1. HIDDEN AUDIO TAG (For Loud Kitchen Bell Loop) -->
+    <!-- Sound source will be handled in JS, but tag is pre-defined here -->
+    <audio id="kds-audio-bell" loop preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- 2. KDS TOP HEADER -->
+    <header class="kds-header">
+        <div class="header-left">
+            <i class="fa-solid fa-fire-burner text-primary"></i>
+            <h1>Kitchen Display System</h1>
+        </div>
+        
+        <div class="header-right">
+            <!-- Audio Permission Toggle (Crucial for Chrome/Safari autoplay policies) -->
+            <button id="btn-toggle-sound" class="btn-outline-danger">
+                <i class="fa-solid fa-volume-xmark"></i> Sound Off (Click to Enable)
+            </button>
+            <div class="live-clock" id="kds-live-clock">
+                00:00:00 AM
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. MAIN KDS GRID (Orders will populate here real-time) -->
+    <main class="kds-main">
+        
+        <!-- Empty State (Jab koi order na ho) -->
+        <div id="kds-empty-state" class="empty-state text-center">
+            <i class="fa-solid fa-mug-hot"></i>
+            <h2>Kitchen is clear!</h2>
+            <p>Waiting for new orders...</p>
+        </div>
+
+        <!-- Orders Grid Container -->
+        <div id="kds-orders-grid" class="kds-grid hidden">
+            
+            <!-- Format Reference for JS (Ye card JavaScript banayega) -->
+            <!--
+            <div class="order-card timer-green" data-order-id="ORD123">
+                
+                <div class="kds-card-header d-flex-between">
+                    <h2>Tbl 05</h2>
+                    <span class="timer-badge">03:45 MIN</span>
+                </div>
+                
+                <div class="kds-card-meta d-flex-between">
+                    <span>ORD-12345</span>
+                    <span class="status-badge pending">NEW</span>
+                </div>
+
+                <div class="kds-card-body">
+                    <ul class="kds-item-list">
+                        <li class="kds-item">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" class="item-check">
+                                <span class="checkmark"></span>
+                                <span class="item-name">2x Paneer Tikka</span>
+                            </label>
+                        </li>
+                        <li class="kds-item">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" class="item-check">
+                                <span class="checkmark"></span>
+                                <span class="item-name">1x Cold Coffee</span>
+                            </label>
+                            <p class="cooking-note"><i class="fa-solid fa-message"></i> Less sugar</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="kds-card-footer">
+                    <button class="btn-kds-action btn-accept w-100">
+                        <i class="fa-solid fa-fire"></i> Accept & Prepare
+                    </button>
+                    <button class="btn-kds-action btn-ready w-100 hidden">
+                        <i class="fa-solid fa-check-double"></i> Mark Ready
+                    </button>
+                </div>
+
+            </div>
+            -->
+            
+        </div>
+    </main>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/kitchen-app.js"></script>
+
+</body>
+</html>
