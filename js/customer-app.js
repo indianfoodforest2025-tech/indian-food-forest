@@ -6,42 +6,30 @@ import { db } from "./firebase-config.js";
 import { collection, getDocs, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getSession, getCustomerDetails } from "./auth.js";
 
-// Verify Session Context before anything else
 const session = getSession();
 if (!session && !window.location.pathname.includes('index.html')) {
-    // Redirect to landing if someone tries to open menu.html directly without QR scan
     window.location.href = "index.html";
 }
 
-// Global Cart Object
 let cart = {}; 
-let menuData = []; // To store fetched menu
+let menuData = [];
 
-// Check which page we are on
 const isMenuPage = window.location.pathname.includes('menu.html');
 const isStatusPage = window.location.pathname.includes('status.html');
 
-// ==========================================================================
-// 1. MENU PAGE LOGIC (`menu.html`)
-// ==========================================================================
 if (isMenuPage) {
-    // DOM Elements
     const skeletonLoader = document.getElementById('menu-skeleton-loader');
     const menuContainer = document.getElementById('menu-items-container');
     const cartBar = document.getElementById('floating-cart-bar');
     const cartModal = document.getElementById('cart-review-modal');
     const toast = document.getElementById('toast-notification');
     
-    // Set Table Number in UI
     document.getElementById('nav-table-no').innerText = session.tableNo;
 
-    // Fetch Menu from Firestore
     async function loadMenu() {
         try {
             const querySnapshot = await getDocs(collection(db, "menu"));
             menuData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // Remove skeleton & Render
             skeletonLoader.classList.add('hidden');
             menuContainer.classList.remove('hidden');
             renderMenu(menuData);
@@ -50,14 +38,10 @@ if (isMenuPage) {
         }
     }
 
-    // Render Menu Cards
     function renderMenu(items) {
         menuContainer.innerHTML = '';
         items.forEach(item => {
-            // Check Out of Stock
             if(item.isAvailable === false) return; 
-
-            // Image Fallback Logic (if no image, use default SVG/Placeholder)
             const imgUrl = item.imageUrl ? item.imageUrl : 'https://placehold.co/120x120/e2e8f0/64748b?text=Food';
             const vegClass = item.type === 'veg' ? 'veg' : 'non-veg';
             const qtyInCart = cart[item.id] ? cart[item.id].qty : 0;
@@ -87,11 +71,9 @@ if (isMenuPage) {
             `;
             menuContainer.appendChild(card);
         });
-
         attachCartListeners();
     }
 
-    // Cart Button Listeners (Add, Plus, Minus)
     function attachCartListeners() {
         document.querySelectorAll('.btn-add-initial, .plus').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -108,28 +90,20 @@ if (isMenuPage) {
         });
     }
 
-    // Update Cart Object & Refresh UI
     function updateCart(id, change) {
         const item = menuData.find(i => i.id === id);
         if (!cart[id]) {
             cart[id] = { ...item, qty: 0 };
         }
-        
         cart[id].qty += change;
-        
-        if (cart[id].qty <= 0) {
-            delete cart[id];
-        }
-        
-        renderMenu(menuData); // Re-render to update Add/Qty buttons
+        if (cart[id].qty <= 0) delete cart[id];
+        renderMenu(menuData);
         updateCartFloatingBar();
     }
 
-    // Bottom Sticky Cart Math
     function updateCartFloatingBar() {
         let totalItems = 0;
         let totalPrice = 0;
-
         Object.values(cart).forEach(item => {
             totalItems += item.qty;
             totalPrice += item.qty * Number(item.price);
@@ -145,7 +119,6 @@ if (isMenuPage) {
         }
     }
 
-    // View Cart Modal
     document.getElementById('btn-view-cart').addEventListener('click', () => {
         const cartList = document.getElementById('cart-items-list');
         cartList.innerHTML = '';
@@ -165,13 +138,11 @@ if (isMenuPage) {
             `;
         });
 
-        const tax = 0; // GST completely removed
+        const tax = 0;
         const grandTotal = subtotal + tax;
 
         document.getElementById('bill-subtotal').innerText = `₹${subtotal}`;
-        document.getElementById('bill-tax').innerText = `₹${tax}`;
         document.getElementById('bill-grand-total').innerText = `₹${grandTotal}`;
-
         cartModal.classList.remove('hidden');
     });
 
@@ -179,18 +150,15 @@ if (isMenuPage) {
         cartModal.classList.add('hidden');
     });
 
-    // Veg Only Filter Logic
     document.getElementById('veg-only-toggle').addEventListener('change', (e) => {
         const isVegOnly = e.target.checked;
         if (isVegOnly) {
-            const vegItems = menuData.filter(i => i.type === 'veg');
-            renderMenu(vegItems);
+            renderMenu(menuData.filter(i => i.type === 'veg'));
         } else {
             renderMenu(menuData);
         }
     });
 
-    // Place Order Logic
     document.getElementById('btn-place-order').addEventListener('click', async () => {
         const btn = document.getElementById('btn-place-order');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending to Kitchen...';
@@ -198,42 +166,36 @@ if (isMenuPage) {
 
         const customer = getCustomerDetails();
         const instructions = document.getElementById('cooking-instructions').value;
-        const orderId = 'ORD' + Date.now().toString().slice(-6); // Unique ID
+        const orderId = 'ORD' + Date.now().toString().slice(-6);
 
-        // Calculate Totals
         let subtotal = 0;
         const itemsArray = Object.values(cart).map(i => {
             subtotal += (i.qty * i.price);
             return { id: i.id, name: i.name, qty: i.qty, price: i.price };
         });
-        const tax = 0; // GST completely removed
+        const tax = 0;
         const grandTotal = subtotal + tax;
 
         const orderData = {
             orderId: orderId,
             tableNo: session.tableNo,
-            customerName: customer.name,
-            customerPhone: customer.phone,
+            customerName: customer.name || 'Guest',
+            customerPhone: customer.phone || 'N/A',
             items: itemsArray,
             instructions: instructions,
             subtotal: subtotal,
             tax: tax,
             totalAmount: grandTotal,
-            status: 'pending', // pending -> preparing -> completed
-            paymentStatus: 'unpaid', // unpaid -> paid
+            status: 'pending',
+            paymentStatus: 'unpaid',
             timestamp: new Date().toISOString()
         };
 
         try {
-            // 1. Save to Orders Collection
             await setDoc(doc(db, "orders", orderId), orderData);
-            
-            // 2. Link active order ID to the Table session
             await updateDoc(doc(db, "tables", session.tableNo.toString()), {
                 activeOrderId: orderId
             });
-
-            // Redirect to Status Tracking Page
             window.location.href = `status.html?order=${orderId}`;
         } catch (error) {
             console.error("Order Failed: ", error);
@@ -242,21 +204,15 @@ if (isMenuPage) {
         }
     });
 
-    // Toast UI function
     function showToast(msg) {
         toast.querySelector('#toast-msg').innerText = msg;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 2000);
     }
 
-    // Initialize Menu
     loadMenu();
 }
 
-
-// ==========================================================================
-// 2. LIVE STATUS & PDF BILL LOGIC (`status.html`)
-// ==========================================================================
 if (isStatusPage) {
     const urlParams = new URLSearchParams(window.location.search);
     const orderId = urlParams.get('order');
@@ -268,34 +224,33 @@ if (isStatusPage) {
 
     const orderRef = doc(db, "orders", orderId);
 
-    // ZERO-REFRESH REAL-TIME LISTENER
     onSnapshot(orderRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             updateTimeline(data.status);
             updateThermalReceipt(data);
             
-            // Handle Payment Status Unlock
             const paymentBadge = document.getElementById('payment-status-badge');
             const pdfBtn = document.getElementById('btn-download-pdf');
             const gmbSection = document.getElementById('gmb-review-section');
 
             if (data.paymentStatus === 'paid') {
-                // Instantly update badge and show download/review buttons without refresh
                 paymentBadge.className = 'status-badge paid';
                 paymentBadge.innerText = 'PAID IN FULL';
-                
                 pdfBtn.classList.remove('hidden');
                 gmbSection.classList.remove('hidden');
+            } else {
+                paymentBadge.className = 'status-badge pending';
+                paymentBadge.innerText = 'PAYMENT PENDING';
+                pdfBtn.classList.add('hidden');
+                gmbSection.classList.add('hidden');
             }
         }
     });
 
-    // Update Timeline UI
     function updateTimeline(status) {
         document.querySelectorAll('.timeline-step').forEach(el => el.classList.remove('active'));
         document.getElementById('step-pending').classList.add('active');
-        
         if (status === 'preparing' || status === 'completed') {
             document.getElementById('step-preparing').classList.add('active');
         }
@@ -304,7 +259,6 @@ if (isStatusPage) {
         }
     }
 
-    // Fill Thermal Receipt Content
     function updateThermalReceipt(data) {
         document.getElementById('display-order-total').innerText = `₹${data.totalAmount}`;
         
@@ -327,21 +281,18 @@ if (isStatusPage) {
         });
 
         document.getElementById('receipt-subtotal').innerText = `₹${data.subtotal}`;
-        document.getElementById('receipt-tax').innerText = `₹${data.tax}`;
         document.getElementById('receipt-grand-total').innerText = `₹${data.totalAmount}`;
     }
 
-    // Trigger PDF Download (Client-Side Free Execution)
     document.getElementById('btn-download-pdf').addEventListener('click', () => {
         const element = document.getElementById('invoice-receipt');
         const opt = {
-            margin:       0,
-            filename:     `${orderId}_Bill.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'in', format: [3.15, 6], orientation: 'portrait' } // 80mm thermal size approx
+            margin: 0,
+            filename: `${orderId}_Bill.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: [3.15, 6], orientation: 'portrait' }
         };
-        // html2pdf library included in status.html head
         html2pdf().set(opt).from(element).save();
     });
 }
