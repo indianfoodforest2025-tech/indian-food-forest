@@ -3,14 +3,14 @@
    ========================================================================== */
 :root {
     /* Brand Colors */
-    --primary-navy: #0F172A;       /* Deep Navy Blue for Headers/Text */
-    --primary-blue: #2563EB;       /* Action Blue for Buttons */
+    --primary-navy: #0F172A;        /* Deep Navy Blue for Headers/Text */
+    --primary-blue: #2563EB;        /* Action Blue for Buttons */
     --bg-white: #FFFFFF;
-    --bg-light: #F8FAFC;           /* Ice White / Off-white background */
+    --bg-light: #F8FAFC;            /* Ice White / Off-white background */
     
     /* Semantic Colors */
     --success-green: #16A34A;      /* Veg / Paid / Success */
-    --danger-red: #DC2626;         /* Non-veg / Occupied / Errors */
+    --danger-red: #DC2626;          /* Non-veg / Occupied / Errors */
     --warning-yellow: #F59E0B;     /* Pending / Waiting */
     
     /* Text Colors */
