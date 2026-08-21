@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menu | Indian Food Forest</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/customer.css">
+</head>
+<body class="customer-body bg-light">
+
+    <!-- 1. TOP NAVIGATION & CONTROLS -->
+    <header class="menu-header sticky-top">
+        <div class="header-top">
+            <div class="brand-mini">
+                <i class="fa-solid fa-leaf text-primary"></i>
+                <span class="brand-title">Indian Food Forest</span>
+            </div>
+            <div class="table-badge-small">
+                <i class="fa-solid fa-bell-concierge"></i> Table <span id="nav-table-no">--</span>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <!-- Veg / Non-Veg Toggle -->
+            <div class="veg-toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="veg-only-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label"><i class="fa-solid fa-leaf text-success"></i> Veg Only</span>
+            </div>
+            
+            <!-- Quick Action: Water Request -->
+            <button id="btn-request-water" class="btn-icon-text">
+                <i class="fa-solid fa-glass-water"></i> Water
+            </button>
+        </div>
+
+        <!-- Horizontal Scrollable Categories -->
+        <nav class="category-nav">
+            <ul class="category-list" id="category-list">
+                <!-- JavaScript se categories yahan aayengi, ex: -->
+                <li class="category-item active" data-category="all">All</li>
+                <li class="category-item" data-category="starters">Starters</li>
+                <li class="category-item" data-category="main-course">Main Course</li>
+                <li class="category-item" data-category="beverages">Beverages</li>
+                <li class="category-item" data-category="desserts">Desserts</li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- 2. MAIN MENU GRID -->
+    <main class="menu-main-content">
+        
+        <!-- SKELETON LOADERS (Data aane tak ye animation dikhega) -->
+        <div id="menu-skeleton-loader" class="menu-grid">
+            <div class="skeleton-card">
+                <div class="skeleton-img pulse"></div>
+                <div class="skeleton-text title pulse"></div>
+                <div class="skeleton-text desc pulse"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-text price pulse"></div>
+                    <div class="skeleton-btn pulse"></div>
+                </div>
+            </div>
+            <div class="skeleton-card">
+                <div class="skeleton-img pulse"></div>
+                <div class="skeleton-text title pulse"></div>
+                <div class="skeleton-text desc pulse"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-text price pulse"></div>
+                    <div class="skeleton-btn pulse"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTUAL MENU ITEMS (JavaScript yahan data inject karega) -->
+        <div id="menu-items-container" class="menu-grid hidden">
+            <!-- Item Card Format Example (Design reference for JS) 
+            <div class="dish-card" data-category="starters" data-veg="true">
+                <div class="dish-img-box">
+                    <img src="URL" alt="Dish Name" loading="lazy">
+                    <span class="veg-badge veg"></span>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-title">Paneer Tikka <span class="tag tag-bestseller">Bestseller</span></h3>
+                    <p class="dish-desc">Clay oven roasted cottage cheese...</p>
+                    <div class="dish-action-row">
+                        <span class="dish-price">₹280</span>
+                        <div class="qty-controller">
+                            <button class="btn-qty minus">-</button>
+                            <span class="qty-val">1</span>
+                            <button class="btn-qty plus">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+        
+        <!-- Bottom space so last item is not hidden behind cart -->
+        <div class="menu-bottom-spacer"></div>
+    </main>
+
+    <!-- 3. FLOATING BOTTOM CART BAR -->
+    <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart">
+        <div class="cart-summary">
+            <span id="cart-item-count" class="item-count">0 ITEMS</span>
+            <span id="cart-total-price" class="total-price">₹0</span>
+        </div>
+        <button id="btn-view-cart" class="btn-checkout">
+            View Cart <i class="fa-solid fa-cart-shopping"></i>
+        </button>
+    </div>
+
+    <!-- 4. CART REVIEW MODAL (Slide up from bottom) -->
+    <div id="cart-review-modal" class="modal-overlay hidden">
+        <div class="modal-card bottom-sheet slide-up">
+            <div class="modal-header d-flex-between">
+                <h3>Your Order</h3>
+                <button id="btn-close-cart" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body cart-body">
+                <!-- Cart Items List will be injected here -->
+                <ul id="cart-items-list" class="cart-items-list">
+                    <!-- JS Format Reference -->
+                </ul>
+                
+                <div class="special-instruction-box">
+                    <label for="cooking-instructions"><i class="fa-solid fa-message"></i> Cooking Instructions (Optional)</label>
+                    <textarea id="cooking-instructions" rows="2" placeholder="E.g., Less spicy, no onions..."></textarea>
+                </div>
+                
+                <div class="bill-summary">
+                    <div class="bill-row">
+                        <span>Subtotal</span>
+                        <span id="bill-subtotal">₹0</span>
+                    </div>
+                    <div class="bill-row">
+                        <span>Taxes (GST 5%)</span>
+                        <span id="bill-tax">₹0</span>
+                    </div>
+                    <hr>
+                    <div class="bill-row grand-total">
+                        <span>Grand Total</span>
+                        <span id="bill-grand-total">₹0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="btn-place-order" class="btn-primary w-100 btn-large">
+                    Place Order <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification (For "Added to Cart" or "Waiter Called") -->
+    <div id="toast-notification" class="toast hidden">
+        <i class="fa-solid fa-circle-check"></i> <span id="toast-msg">Item added!</span>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/session.js"></script>
+    <script type="module" src="js/customer-app.js"></script>
+    
+</body>
+</html>
