@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Indian Food Forest | Digital Menu</title>
+    
+    <!-- Google Fonts: Poppins for a Premium SaaS Look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Links (Style aakhir me likhenge, par link abhi se kar diya hai) -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/customer.css">
+</head>
+<body class="customer-body landing-bg">
+
+    <!-- 1. FULLSCREEN LOADER (Jab tak URL ka Table Secret verify ho raha hai) -->
+    <div id="session-loader" class="fullscreen-overlay active">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <h3 class="loader-text">Securing your table...</h3>
+            <p class="loader-subtext">Indian Food Forest</p>
+        </div>
+    </div>
+
+    <!-- 2. SECURITY ERROR SCREEN (Agar link copy-paste ki gayi ya invalid QR hai) -->
+    <div id="security-error-screen" class="fullscreen-overlay hidden">
+        <div class="error-card">
+            <i class="fa-solid fa-triangle-exclamation error-icon"></i>
+            <h2 class="error-title">Invalid Session</h2>
+            <p class="error-msg">Please scan the QR code placed on your table to access the menu and place an order.</p>
+        </div>
+    </div>
+
+    <!-- 3. MAIN WELCOME SCREEN (Successful scan ke baad dikhega) -->
+    <div id="welcome-screen" class="app-container hidden fade-in">
+        
+        <!-- Brand Header -->
+        <header class="brand-header">
+            <div class="logo-container">
+                <!-- Fallback text icon if logo image is missing -->
+                <i class="fa-solid fa-leaf brand-icon"></i>
+            </div>
+            <h1 class="brand-name">Indian Food Forest</h1>
+            <p class="brand-tagline">Experience the finest dining</p>
+        </header>
+
+        <!-- Table Information Card -->
+        <main class="welcome-main">
+            <div class="table-info-card">
+                <p class="welcome-text">Welcome back!</p>
+                <div class="table-badge">
+                    <span class="table-label">You are seated at</span>
+                    <h2 class="table-number" id="display-table-no">Table --</h2>
+                </div>
+                <p class="session-timer">Session started at: <span id="session-time-display">--:--</span></p>
+            </div>
+
+            <!-- Action Button to Trigger Marketing Modal or Menu -->
+            <button id="btn-start-order" class="btn-primary btn-large">
+                <i class="fa-solid fa-utensils"></i> Explore Menu
+            </button>
+            
+            <!-- Quick Request (Call Waiter / Water) directly from Landing -->
+            <button id="btn-call-water-landing" class="btn-secondary btn-large outline">
+                <i class="fa-solid fa-glass-water"></i> Request Water
+            </button>
+        </main>
+
+        <footer class="landing-footer">
+            <p>&copy; 2026 Indian Food Forest. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- 4. OPTIONAL MARKETING MODAL (Customer Details with 1-Click Skip) -->
+    <div id="marketing-modal" class="modal-overlay hidden">
+        <div class="modal-card slide-up">
+            <div class="modal-header">
+                <h3>Unlock Special Offers 🎁</h3>
+                <p>Enter your details to receive a digital copy of your bill and exclusive discounts on your next visit.</p>
+            </div>
+            
+            <div class="modal-body">
+                <form id="customer-details-form" onsubmit="return false;">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="cust-name" placeholder="Enter your Name (Optional)" autocomplete="name">
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="tel" id="cust-phone" placeholder="WhatsApp Number (Optional)" pattern="[0-9]{10}" maxlength="10" autocomplete="tel">
+                    </div>
+                    
+                    <button type="submit" id="btn-save-details" class="btn-primary w-100">
+                        Continue to Menu <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <!-- Zero Friction Skip Button -->
+                <button id="btn-skip-details" class="btn-text-only">
+                    Skip / Continue as Guest
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files (Order is important for ES6 Modules) -->
+    <!-- Note: Firebase config and logic files will be linked here -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/session.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    
+</body>
+</html>
