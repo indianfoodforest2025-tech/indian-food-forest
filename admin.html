@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Indian Food Forest</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- External Libraries (Free CDNs) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+    <!-- 1. SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-leaf text-success"></i>
+            <h2>Admin Panel</h2>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li class="nav-item active" data-target="section-tables">
+                <i class="fa-solid fa-border-all"></i> Live Floor Grid
+            </li>
+            <li class="nav-item" data-target="section-menu">
+                <i class="fa-solid fa-burger"></i> Menu & Stock
+            </li>
+            <li class="nav-item" data-target="section-qr">
+                <i class="fa-solid fa-qrcode"></i> QR Generator
+            </li>
+            <li class="nav-item" data-target="section-reports">
+                <i class="fa-solid fa-chart-line"></i> Sales Reports
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <button id="btn-logout" class="btn-outline-danger w-100">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT AREA -->
+    <main class="main-content">
+        
+        <!-- TOP APP BAR -->
+        <header class="top-app-bar d-flex-between">
+            <h2 id="current-section-title">Live Floor Grid</h2>
+            
+            <div class="top-bar-actions">
+                <div id="waiter-alert-toast" class="alert-toast hidden">
+                    <i class="fa-solid fa-bell ringing"></i> <span id="waiter-alert-msg">Table 5 requested Water!</span>
+                </div>
+                <div class="admin-profile">
+                    <div class="avatar">A</div>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ============================================== -->
+        <!-- SECTION A: LIVE FLOOR GRID (Table Management) -->
+        <!-- ============================================== -->
+        <section id="section-tables" class="admin-section active fade-in">
+            <div class="section-header d-flex-between">
+                <p>Manage tables, view live orders, and approve payments.</p>
+                <div class="legend-box">
+                    <span class="legend-item"><span class="dot green"></span> Free</span>
+                    <span class="legend-item"><span class="dot red"></span> Occupied</span>
+                    <span class="legend-item"><span class="dot yellow"></span> Payment Pending</span>
+                </div>
+            </div>
+
+            <!-- Tables Grid (Populated by JS) -->
+            <div id="tables-grid" class="tables-grid">
+                <!-- Card Format Reference -->
+                <!--
+                <div class="table-card occupied" data-table="1">
+                    <div class="card-head d-flex-between">
+                        <h3>T-01</h3>
+                        <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <p class="cust-name">Rahul</p>
+                        <p class="bill-amt">₹598</p>
+                    </div>
+                    <div class="card-foot">
+                        <button class="btn-success btn-sm w-100">Mark Paid & Clear</button>
+                    </div>
+                </div>
+                -->
+            </div>
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- SECTION B: MENU MANAGER (Cloudinary Upload) -->
+        <!-- ============================================== -->
+        <section id="section-menu" class="admin-section hidden fade-in">
+            <div class="section-header d-flex-between">
+                <p>Add, edit prices, upload images, and toggle out-of-stock items.</p>
+                <button id="btn-open-add-modal" class="btn-primary">
+                    <i class="fa-solid fa-plus"></i> Add New Dish
+                </button>
+            </div>
+
+            <!-- Menu Table -->
+            <div class="table-responsive bg-white rounded shadow-sm">
+                <table class="data-table w-100">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Dish Name</th>
+                            <th>Category</th>
+                            <th>Price (₹)</th>
+                            <th>Stock Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-menu-list">
+                        <!-- JS Injected Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- SECTION C: QR CODE GENERATOR -->
+        <!-- ============================================== -->
+        <section id="section-qr" class="admin-section hidden fade-in">
+            <div class="card-white mx-auto text-center" style="max-width: 600px;">
+                <i class="fa-solid fa-qrcode fa-3x text-primary mb-2"></i>
+                <h3>Bulk QR Code Generator</h3>
+                <p class="text-muted mb-3">Generate print-ready QR codes for all tables with dynamic secure tokens.</p>
+                
+                <div class="input-group-inline justify-center mb-4">
+                    <label>Generate QR for Tables: 1 to </label>
+                    <input type="number" id="qr-table-count" value="15" min="1" max="100" class="input-sm">
+                    <button id="btn-generate-qrs" class="btn-primary">Generate</button>
+                </div>
+
+                <div class="qr-print-actions hidden" id="qr-actions-box">
+                    <button id="btn-print-qrs" class="btn-secondary">
+                        <i class="fa-solid fa-print"></i> Print QR Sheets
+                    </button>
+                </div>
+
+                <!-- QR Grid (Hidden during normal view, visible during print) -->
+                <div id="qr-display-grid" class="qr-grid mt-4"></div>
+            </div>
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- SECTION D: SALES REPORTS & ANALYTICS -->
+        <!-- ============================================== -->
+        <section id="section-reports" class="admin-section hidden fade-in">
+            <div class="section-header d-flex-between">
+                <div class="date-filter-group">
+                    <label>Select Date: </label>
+                    <input type="date" id="report-date-picker" class="input-date">
+                    <button id="btn-fetch-report" class="btn-primary btn-sm">Load</button>
+                </div>
+                <div class="report-actions">
+                    <button id="btn-export-csv" class="btn-outline-success">
+                        <i class="fa-solid fa-file-csv"></i> Export CSV
+                    </button>
+                    <button id="btn-end-of-day" class="btn-danger">
+                        <i class="fa-solid fa-power-off"></i> End of Day Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid mt-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                    <div class="stat-details">
+                        <p>Total Revenue</p>
+                        <h3 id="stat-revenue">₹0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green"><i class="fa-solid fa-receipt"></i></div>
+                    <div class="stat-details">
+                        <p>Total Orders</p>
+                        <h3 id="stat-orders">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange"><i class="fa-solid fa-fire"></i></div>
+                    <div class="stat-details">
+                        <p>Top Item</p>
+                        <h3 id="stat-top-item">--</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container mt-4 bg-white rounded shadow-sm p-4">
+                <canvas id="salesChart" height="100"></canvas>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- ============================================== -->
+    <!-- MODALS (Dish Upload) -->
+    <!-- ============================================== -->
+    <div id="add-dish-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header d-flex-between">
+                <h3>Add / Edit Dish</h3>
+                <button id="btn-close-dish-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="dish-upload-form" onsubmit="return false;">
+                    <div class="input-group">
+                        <label>Dish Name</label>
+                        <input type="text" id="input-dish-name" required placeholder="e.g. Paneer Tikka">
+                    </div>
+                    
+                    <div class="row-2">
+                        <div class="input-group">
+                            <label>Category</label>
+                            <select id="input-dish-category" required>
+                                <option value="starters">Starters</option>
+                                <option value="main-course">Main Course</option>
+                                <option value="beverages">Beverages</option>
+                                <option value="desserts">Desserts</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Price (₹)</label>
+                            <input type="number" id="input-dish-price" required placeholder="250">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Food Type</label>
+                        <select id="input-dish-type">
+                            <option value="veg">Vegetarian</option>
+                            <option value="non-veg">Non-Vegetarian</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Image Upload (Direct to Cloudinary)</label>
+                        <input type="file" id="input-dish-image" accept="image/*" class="file-input">
+                        <p class="help-text text-muted text-sm mt-1">Leave empty to keep existing/placeholder image.</p>
+                    </div>
+                    
+                    <button type="submit" id="btn-save-dish" class="btn-primary w-100 mt-3">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/admin-app.js"></script>
+    <script type="module" src="js/reports-app.js"></script>
+
+</body>
+</html>
