@@ -165,7 +165,7 @@ if (isMenuPage) {
             `;
         });
 
-        const tax = Math.round(subtotal * 0.05); // 5% GST
+        const tax = 0; // GST Removed
         const grandTotal = subtotal + tax;
 
         document.getElementById('bill-subtotal').innerText = `₹${subtotal}`;
@@ -206,7 +206,7 @@ if (isMenuPage) {
             subtotal += (i.qty * i.price);
             return { id: i.id, name: i.name, qty: i.qty, price: i.price };
         });
-        const tax = Math.round(subtotal * 0.05);
+        const tax = 0; // GST Removed
         const grandTotal = subtotal + tax;
 
         const orderData = {
