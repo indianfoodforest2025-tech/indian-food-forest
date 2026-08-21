@@ -165,7 +165,7 @@ if (isMenuPage) {
             `;
         });
 
-        const tax = 0; // GST Removed
+        const tax = 0; // GST completely removed
         const grandTotal = subtotal + tax;
 
         document.getElementById('bill-subtotal').innerText = `₹${subtotal}`;
@@ -206,7 +206,7 @@ if (isMenuPage) {
             subtotal += (i.qty * i.price);
             return { id: i.id, name: i.name, qty: i.qty, price: i.price };
         });
-        const tax = 0; // GST Removed
+        const tax = 0; // GST completely removed
         const grandTotal = subtotal + tax;
 
         const orderData = {
