@@ -42,9 +42,8 @@ document.getElementById('btn-logout').addEventListener('click', adminLogout);
 // ==========================================================================
 // 2. CLOUDINARY UPLOAD & MENU MANAGEMENT
 // ==========================================================================
-// IMPORTANT: Replace 'indian_food_preset' with your actual Unsigned Preset Name from Cloudinary Settings
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/z2hgv1bk/image/upload';
-const UPLOAD_PRESET = 'indian_food_preset'; // <--- CHANGE THIS 
+const UPLOAD_PRESET = 'indian_food_preset'; 
 
 const modalAddDish = document.getElementById('add-dish-modal');
 const btnSaveDish = document.getElementById('btn-save-dish');
@@ -85,12 +84,11 @@ document.getElementById('dish-upload-form').addEventListener('submit', async (e)
             });
             const cloudData = await cloudRes.json();
             
-            // Cloudinary returns a highly compressed secure webp url if configured
             imageUrl = cloudData.secure_url; 
         }
 
         // Step B: Save/Update in Firestore
-        const dishId = name.toLowerCase().replace(/\s+/g, '-'); // e.g. "Paneer Tikka" -> "paneer-tikka"
+        const dishId = name.toLowerCase().replace(/\s+/g, '-'); 
         
         const dishData = {
             name, category, price, type,
@@ -98,7 +96,6 @@ document.getElementById('dish-upload-form').addEventListener('submit', async (e)
             timestamp: new Date().toISOString()
         };
         
-        // Only update image if a new one was uploaded
         if (imageUrl) dishData.imageUrl = imageUrl;
 
         await setDoc(doc(db, "menu", dishId), dishData, { merge: true });
@@ -152,26 +149,22 @@ const tablesGrid = document.getElementById('tables-grid');
 onSnapshot(collection(db, "tables"), async (snapshot) => {
     tablesGrid.innerHTML = '';
     
-    // Convert to array and sort by table number numerically
     const tables = [];
     snapshot.forEach(d => tables.push({ id: d.id, ...d.data() }));
     tables.sort((a, b) => Number(a.id) - Number(b.id));
 
     for (let table of tables) {
-        // Check Water Request Alert
         if (table.waterRequest) {
             waiterMsg.innerText = `Table ${table.id} requested Water!`;
             waiterToast.classList.remove('hidden');
-            audioAlert.play().catch(e => {}); // Play soft ping
+            audioAlert.play().catch(e => {}); 
             
-            // Auto reset flag in DB after ringing
             setTimeout(() => {
                 updateDoc(doc(db, "tables", table.id), { waterRequest: false });
                 waiterToast.classList.add('hidden');
             }, 8000);
         }
 
-        // Build Table Card UI
         let cardClass = 'free';
         let actionHtml = `<p class="text-muted text-sm text-center">Scan QR to start</p>`;
         let detailsHtml = `<p class="text-center text-muted mt-3">Empty</p>`;
@@ -180,7 +173,6 @@ onSnapshot(collection(db, "tables"), async (snapshot) => {
             cardClass = 'occupied';
             detailsHtml = `<p class="cust-name">Guests Seated</p><p class="text-sm text-muted">Browsing menu...</p>`;
             
-            // If they placed an order, fetch order details
             if (table.activeOrderId) {
                 const orderRef = doc(db, "orders", table.activeOrderId);
                 const orderSnap = await getDoc(orderRef);
@@ -189,7 +181,7 @@ onSnapshot(collection(db, "tables"), async (snapshot) => {
                     const ordData = orderSnap.data();
                     
                     if (ordData.paymentStatus === 'unpaid') {
-                        cardClass = 'pending'; // Yellow border
+                        cardClass = 'pending'; 
                         detailsHtml = `
                             <p class="cust-name">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
                             <p class="bill-amt">₹${ordData.totalAmount}</p>
@@ -219,41 +211,37 @@ onSnapshot(collection(db, "tables"), async (snapshot) => {
     }
 });
 
-// Handle Payment
 window.approvePayment = async function(orderId, tableId) {
     if (confirm(`Approve payment for Order #${orderId} and free Table ${tableId}?`)) {
-        // 1. Mark order as paid (triggers PDF download for customer)
         await updateDoc(doc(db, "orders", orderId), { paymentStatus: 'paid' });
         
-        // 2. Reset Table Status & Generate new secure token for next customer
         const newToken = Math.random().toString(36).substring(2, 10);
         await updateDoc(doc(db, "tables", tableId), { 
             status: 'free',
             activeOrderId: null,
-            secret: newToken // Prevents old customers from ordering again from home
+            secret: newToken 
         });
     }
 };
 
 
 // ==========================================================================
-// 4. BULK SECURE QR GENERATOR
+// 4. BULK SECURE QR GENERATOR (FORCED CUSTOM SUBDOMAIN)
 // ==========================================================================
 document.getElementById('btn-generate-qrs').addEventListener('click', async () => {
     const count = Number(document.getElementById('qr-table-count').value);
     const qrGrid = document.getElementById('qr-display-grid');
     const actionsBox = document.getElementById('qr-actions-box');
     
-    qrGrid.innerHTML = ''; // clear old
-    // Use current hosting domain (fallback to localhost for dev)
-    const baseUrl = window.location.origin.includes('github.io') ? window.location.origin + window.location.pathname.replace('admin.html','') : 'http://localhost:5500/';
+    qrGrid.innerHTML = ''; 
+    
+    // Fixed custom subdomain for QR codes
+    const baseUrl = "https://order.indianfoodforest.com/";
 
     for (let i = 1; i <= count; i++) {
-        // 1. Generate random 8-char secure token
         const secretToken = Math.random().toString(36).substring(2, 10);
         const tableId = i.toString();
 
-        // 2. Save/Init Table in Firestore
         await setDoc(doc(db, "tables", tableId), {
             status: 'free',
             secret: secretToken,
@@ -261,16 +249,13 @@ document.getElementById('btn-generate-qrs').addEventListener('click', async () =
             waterRequest: false
         }, { merge: true });
 
-        // 3. Create QR URL
         const scanUrl = `${baseUrl}index.html?table=${tableId}&secret=${secretToken}`;
 
-        // 4. Build UI Card
         const card = document.createElement('div');
         card.className = 'qr-card';
         card.innerHTML = `<h4>Table ${tableId}</h4><div id="qr-box-${tableId}" class="mt-2 mx-auto" style="width: 128px;"></div><p class="text-sm text-muted mt-2">Indian Food Forest</p>`;
         qrGrid.appendChild(card);
 
-        // 5. Generate QR Image using library
         new QRCode(document.getElementById(`qr-box-${tableId}`), {
             text: scanUrl,
             width: 128,
@@ -282,10 +267,9 @@ document.getElementById('btn-generate-qrs').addEventListener('click', async () =
     }
 
     actionsBox.classList.remove('hidden');
-    alert(`${count} Secure QR Codes generated and saved to database!`);
+    alert(`${count} Secure QR Codes generated with custom domain and saved!`);
 });
 
-// Print QRs natively via browser
 document.getElementById('btn-print-qrs').addEventListener('click', () => {
     window.print();
 });
