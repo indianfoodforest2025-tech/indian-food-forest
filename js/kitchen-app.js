@@ -39,7 +39,6 @@ setInterval(() => {
 // ==========================================================================
 // REAL-TIME FIRESTORE LISTENER (Zero Refresh)
 // ==========================================================================
-// Fetch orders that are NOT completed yet
 const q = query(collection(db, "orders"), where("status", "in", ["pending", "preparing"]));
 
 onSnapshot(q, (snapshot) => {
@@ -66,14 +65,12 @@ function handleAlarm(hasPending) {
     if (!isSoundEnabled) return; // Muted by chef
 
     if (hasPending) {
-        // If alarm is paused, start playing
         if (alarmSound.paused) {
             alarmSound.play().catch(err => console.log("Audio play prevented:", err));
         }
     } else {
-        // Stop alarm if no 'pending' orders exist
         alarmSound.pause();
-        alarmSound.currentTime = 0; // Reset to start
+        alarmSound.currentTime = 0; 
     }
 }
 
@@ -92,12 +89,10 @@ function renderKDS(orders) {
     ordersGrid.innerHTML = '';
 
     orders.forEach(order => {
-        // Calculate Timer Color Class
         const timeInfo = calculateTime(order.timestamp);
         
         let itemsHtml = '';
         order.items.forEach((item, index) => {
-            // Using ID to maintain checkbox state per item
             const checkboxId = `chk-${order.orderId}-${index}`;
             itemsHtml += `
                 <li class="kds-item">
@@ -114,7 +109,6 @@ function renderKDS(orders) {
         card.className = `order-card ${timeInfo.colorClass}`;
         card.setAttribute('data-id', order.orderId);
         
-        // UI based on status
         const isPending = order.status === 'pending';
         const badgeClass = isPending ? 'pending' : 'preparing';
         const badgeText = isPending ? 'NEW ORDER' : 'PREPARING';
@@ -162,29 +156,14 @@ function calculateTime(orderTimestamp) {
     const diffMs = now - orderTime;
     const diffMins = Math.floor(diffMs / 60000);
 
-    // Green < 10 mins, Yellow 10-15 mins, Red > 15 mins
     let colorClass = 'timer-green';
     if (diffMins >= 10 && diffMins < 15) colorClass = 'timer-yellow';
     if (diffMins >= 15) colorClass = 'timer-red';
 
-    // Format display (e.g., "05:00 MIN" -> we just show "5 MIN" for simplicity here)
     const displayMins = diffMins < 10 ? `0${diffMins}` : diffMins;
     
     return { mins: displayMins, colorClass };
 }
-
-// Refresh Timer Colors Every 30 Seconds
-setInterval(() => {
-    // Only forces visual update, no DB read cost
-    document.querySelectorAll('.order-card').forEach(card => {
-        const orderId = card.getAttribute('data-id');
-        // A full re-render isn't needed, we just re-evaluate timestamps 
-        // But for absolute sync without refresh, re-fetching local query isn't bad.
-        // Handled naturally by the onSnapshot or next DB update, but we can force it:
-    });
-    // In a real production, you'd update DOM locally without Firestore reload.
-    // For simplicity, it will update when an order state changes.
-}, 30000);
 
 // ==========================================================================
 // ACTION: UPDATE ORDER STATUS
@@ -195,7 +174,6 @@ window.updateOrderStatus = async function(orderId, newStatus) {
         await updateDoc(orderRef, {
             status: newStatus
         });
-        // Success: onSnapshot will auto-refresh UI
     } catch (error) {
         console.error("Error updating status: ", error);
         alert("Failed to update status. Check connection.");
