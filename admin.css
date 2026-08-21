@@ -1,0 +1,199 @@
+/* ==========================================================================
+   ADMIN & KITCHEN SPECIFIC STYLES (Desktop / Tablet First)
+   ========================================================================== */
+.admin-body {
+    display: flex;
+    height: 100vh;
+    overflow: hidden; /* Sidebar aur Main content ka apna scroll hoga */
+    background-color: var(--bg-light);
+}
+
+/* ==========================================================================
+   1. ADMIN SIDEBAR
+   ========================================================================== */
+.sidebar {
+    width: 260px;
+    background: var(--primary-navy);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+.sidebar-brand {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand h2 { color: white; font-size: 18px; margin: 0; }
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+.nav-item {
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: #94A3B8;
+    font-weight: 500;
+}
+.nav-item:hover, .nav-item.active {
+    background: rgba(255,255,255,0.05);
+    color: white;
+    border-left: 4px solid var(--primary-blue);
+}
+.nav-item.active i { color: var(--primary-blue); }
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ==========================================================================
+   2. MAIN CONTENT AREA (Admin)
+   ========================================================================== */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.top-app-bar {
+    background: white;
+    padding: 15px 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+.top-bar-actions { display: flex; align-items: center; gap: 20px; }
+.admin-profile { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.avatar { width: 35px; height: 35px; background: var(--primary-blue); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 600; }
+
+.admin-section {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+.section-header { margin-bottom: 25px; }
+
+/* Alert Toast (Call Waiter) */
+.alert-toast {
+    background: #FEF2F2;
+    border: 1px solid var(--danger-red);
+    color: var(--danger-red);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   3. LIVE FLOOR GRID (Tables)
+   ========================================================================== */
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+.table-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--success-green); /* Default Free */
+    transition: var(--transition);
+}
+.table-card.occupied { border-top-color: var(--danger-red); }
+.table-card.pending { border-top-color: var(--warning-yellow); }
+
+.card-head h3 { font-size: 20px; margin: 0; }
+.status-icon { color: var(--text-muted); }
+.table-card.occupied .status-icon { color: var(--danger-red); }
+.card-body { margin: 15px 0; min-height: 50px; }
+.cust-name { font-weight: 500; font-size: 15px; }
+.bill-amt { font-size: 18px; font-weight: 600; color: var(--text-main); margin-top: 5px; }
+
+/* Legend Dots */
+.legend-box { display: flex; gap: 15px; font-size: 13px; font-weight: 500; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.green { background: var(--success-green); }
+.dot.red { background: var(--danger-red); }
+.dot.yellow { background: var(--warning-yellow); }
+
+/* ==========================================================================
+   4. DATA TABLES (Menu Manager) & STATS
+   ========================================================================== */
+.table-responsive { overflow-x: auto; }
+.data-table th { background: #F1F5F9; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border-color); }
+.data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; }
+.dish-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-md); }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.stat-card { background: white; padding: 20px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow-sm); }
+.stat-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white; }
+.bg-blue { background: var(--primary-blue); }
+.bg-green { background: var(--success-green); }
+.bg-orange { background: #F97316; }
+.stat-details p { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-details h3 { font-size: 24px; margin: 0; }
+
+/* QR Generator Layout */
+.card-white { background: white; padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto; padding: 10px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); }
+
+/* ==========================================================================
+   5. KITCHEN DISPLAY SYSTEM (KDS Theme)
+   ========================================================================== */
+.kds-theme { background-color: #E2E8F0; flex-direction: column; overflow-y: auto; }
+.kds-header { background: var(--primary-navy); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-md); z-index: 10; }
+.kds-header h1 { color: white; margin: 0; font-size: 22px; display: inline-block; margin-left: 10px; }
+.live-clock { font-size: 20px; font-weight: 600; font-family: monospace; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: var(--radius-md); }
+
+.kds-main { padding: 25px; flex: 1; }
+.empty-state { margin-top: 10vh; color: var(--text-muted); }
+.empty-state i { font-size: 60px; color: #CBD5E1; margin-bottom: 15px; }
+
+.kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start; }
+.order-card { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; display: flex; flex-direction: column; border: 2px solid transparent; }
+
+/* Timer Based Statuses for KDS */
+.order-card.timer-green { border-color: var(--success-green); }
+.order-card.timer-green .timer-badge { background: var(--success-green); color: white; }
+
+.order-card.timer-yellow { border-color: var(--warning-yellow); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
+.order-card.timer-yellow .timer-badge { background: var(--warning-yellow); color: white; }
+
+.order-card.timer-red { border-color: var(--danger-red); box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); animation: flashRed 2s infinite; }
+.order-card.timer-red .timer-badge { background: var(--danger-red); color: white; font-weight: bold; }
+
+@keyframes flashRed { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+
+.kds-card-header { background: #F8FAFC; padding: 15px; border-bottom: 1px solid var(--border-color); }
+.kds-card-header h2 { margin: 0; font-size: 24px; color: var(--primary-navy); }
+.timer-badge { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; font-family: monospace; }
+.kds-card-meta { padding: 10px 15px; border-bottom: 1px dashed var(--border-color); font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+.kds-card-body { padding: 15px; flex: 1; }
+.kds-item-list { display: flex; flex-direction: column; gap: 12px; }
+.kds-item { border-bottom: 1px solid #F1F5F9; padding-bottom: 8px; }
+.kds-item:last-child { border-bottom: none; padding-bottom: 0; }
+.cooking-note { font-size: 13px; color: var(--danger-red); font-weight: 500; margin-left: 30px; margin-top: 5px; background: #FEF2F2; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+
+.kds-card-footer { padding: 15px; background: #F8FAFC; border-top: 1px solid var(--border-color); }
+.btn-kds-action { padding: 12px; font-size: 16px; font-weight: 600; border-radius: var(--radius-md); border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: var(--transition); color: white; }
+.btn-accept { background: var(--primary-blue); }
+.btn-accept:hover { background: #1D4ED8; }
+.btn-ready { background: var(--success-green); }
+.btn-ready:hover { background: #15803D; }
