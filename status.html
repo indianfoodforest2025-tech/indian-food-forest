@@ -83,95 +83,87 @@
             </div>
         </div>
 
-        <!-- 3. DIGITAL INVOICE RECEIPT (Ye section PDF me convert hoga) -->
+        <!-- 3. DIGITAL INVOICE RECEIPT (Thermal Print Format) -->
         <div class="invoice-wrapper">
-            <div id="invoice-receipt" class="invoice-card">
+            <div id="invoice-receipt" class="invoice-card" style="background-color: #ffffff; color: #000000; padding: 20px; font-family: monospace;">
                 <!-- Receipt Header -->
-                <div class="receipt-header text-center">
-                    <i class="fa-solid fa-leaf receipt-logo"></i>
-                    <h2>Indian Food Forest</h2>
-                    <p>Main Road, City - 400001</p>
-                    <p>FSSAI: 12345678901234</p>
+                <div class="receipt-header text-center" style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                    <i class="fa-solid fa-leaf receipt-logo" style="font-size: 24px;"></i>
+                    <h2 style="margin: 5px 0; font-size: 18px; color: #000;">Indian Food Forest</h2>
+                    <p style="margin: 2px 0; font-size: 10px; color: #000; line-height: 1.3;">
+                        Shop no 50, Opp Ramnagar Gate, Near M ward Digha,<br>
+                        Thane Belapur MIDC road, Kalawa Mumbra Zone,<br>
+                        Thane, Maharashtra - 400708<br>
+                        Phone: 8286468504<br>
+                        FSSAI: 21526068003444[cite: 1]
+                    </p>
                 </div>
-                
-                <hr class="receipt-divider dashed">
                 
                 <!-- Receipt Meta -->
-                <div class="receipt-meta d-flex-between">
+                <div class="receipt-meta d-flex-between" style="font-size: 11px; margin-bottom: 10px; display: flex; justify-content: space-between;">
                     <div>
-                        <p>Date: <span id="receipt-date">--/--/----</span></p>
-                        <p>Table: <span id="receipt-table">--</span></p>
+                        <div>Date: <span id="receipt-date">--/--/----</span></div>
+                        <div>Table: <span id="receipt-table">--</span></div>
                     </div>
-                    <div class="text-right">
-                        <p>Time: <span id="receipt-time">--:--</span></p>
-                        <p>Order: <span id="receipt-order-id">#----</span></p>
+                    <div class="text-right" style="text-align: right;">
+                        <div>Time: <span id="receipt-time">--:--</span></div>
+                        <div>Order: <span id="receipt-order-id">#----</span></div>
                     </div>
                 </div>
 
-                <hr class="receipt-divider dashed">
+                <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
 
                 <!-- Itemized List -->
-                <table class="receipt-table w-100">
+                <table class="receipt-table w-100" style="width: 100%; font-size: 12px; text-align: left; border-collapse: collapse;">
                     <thead>
-                        <tr>
-                            <th class="text-left">Item</th>
-                            <th class="text-center">Qty</th>
-                            <th class="text-right">Amt</th>
+                        <tr style="border-bottom: 1px dashed #000;">
+                            <th class="text-left" style="padding-bottom: 5px;">Item</th>
+                            <th class="text-center" style="padding-bottom: 5px; text-align: center;">Qty</th>
+                            <th class="text-right" style="padding-bottom: 5px; text-align: right;">Amt</th>
                         </tr>
                     </thead>
                     <tbody id="receipt-items-list">
                         <!-- JS injects items here -->
-                        <!-- Example: 
-                        <tr>
-                            <td>Paneer Tikka</td>
-                            <td class="text-center">1</td>
-                            <td class="text-right">280</td>
-                        </tr> 
-                        -->
                     </tbody>
                 </table>
 
-                <hr class="receipt-divider dashed">
+                <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
 
-                <!-- Bill Math -->
-                <div class="receipt-summary">
-                    <div class="d-flex-between">
+                <!-- Bill Math (No GST) -->
+                <div class="receipt-summary" style="font-size: 12px;">
+                    <div class="d-flex-between" style="display: flex; justify-content: space-between;">
                         <span>Subtotal</span>
                         <span id="receipt-subtotal">₹0</span>
                     </div>
-                    <div class="d-flex-between">
-                        <span>Taxes (GST 5%)</span>
-                        <span id="receipt-tax">₹0</span>
-                    </div>
-                    <div class="d-flex-between grand-total-row mt-2">
-                        <strong>GRAND TOTAL</strong>
-                        <strong id="receipt-grand-total">₹0</strong>
+                    <div class="d-flex-between grand-total-row mt-2" style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-top: 5px;">
+                        <span>GRAND TOTAL</span>
+                        <span id="receipt-grand-total">₹0</span>
                     </div>
                 </div>
 
-                <hr class="receipt-divider dashed">
+                <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
                 
                 <!-- Payment Status Badge -->
-                <div class="receipt-footer text-center">
-                    <div id="payment-status-badge" class="status-badge pending">
+                <div class="receipt-footer text-center" style="text-align: center;">
+                    <div id="payment-status-badge" class="status-badge pending" style="display: inline-block; padding: 4px 10px; border: 1px solid #000; border-radius: 12px; font-size: 11px; font-weight: bold;">
                         PAYMENT PENDING
                     </div>
-                    <p class="thank-you-msg">Thank You! Visit Again.</p>
+                    <p class="thank-you-msg" style="font-size: 10px; margin-top: 5px;">Thank You! Visit Again.</p>
                 </div>
             </div>
         </div>
 
         <!-- 4. ACTION BUTTONS (Download PDF & Review) -->
         <div class="status-actions">
-            <!-- Yeh button by default disabled/hidden rahega, Admin ke "Mark as Paid" karte hi green ho jayega -->
+            <!-- Download Button -->
             <button id="btn-download-pdf" class="btn-success btn-large w-100 hidden">
                 <i class="fa-solid fa-file-pdf"></i> Download Invoice
             </button>
 
-            <!-- GMB Review Link (Payment ke baad dikhega) -->
+            <!-- GMB Review Link -->
             <div id="gmb-review-section" class="review-prompt text-center hidden">
                 <p>Enjoyed the food?</p>
-                <a href="YOUR_GMB_LINK_HERE" target="_blank" class="btn-outline-primary btn-large w-100">
+                <a href="https://share.google/cVI1KgSQoCB3BztHv" target="_blank" class="btn-outline-primary btn-large w-100" style="display: inline-block; text-decoration: none;">
                     <i class="fa-brands fa-google"></i> Rate us on Google
                 </a>
             </div>
