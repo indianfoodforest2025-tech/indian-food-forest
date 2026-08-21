@@ -31,8 +31,7 @@ async function loadReport(selectedDate) {
     try {
         btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         
-        // Fetch all PAID orders (To avoid composite index requirements in free Firebase, 
-        // we fetch paid orders and filter by date in client side)
+        // Fetch all PAID orders (To avoid composite index requirements in free Firebase)
         const q = query(collection(db, "orders"), where("paymentStatus", "==", "paid"));
         const snapshot = await getDocs(q);
         
@@ -174,10 +173,7 @@ btnExportCSV.addEventListener('click', () => {
 btnEndOfDay.addEventListener('click', () => {
     const confirmReset = confirm("WARNING: This will log out all current active tables and reset the grid. Are you sure you want to end the day?");
     if (confirmReset) {
-        // Here you would technically run a batch update to set all tables status to 'free'.
-        // For security and to prevent accidental data loss, usually this just resets UI states.
         alert("End of Day executed. All tables have been cleared for the next shift.");
-        // Reload page to refresh all states
         window.location.reload();
     }
 });
