@@ -20,14 +20,16 @@
     <!-- 0. KITCHEN SECURE PIN OVERLAY -->
     <!-- ============================================== -->
     <div id="kitchen-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 9999;">
-        <div class="modal-card text-center shadow-lg">
-            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <div class="modal-card text-center shadow-lg" style="max-width: 360px; margin: auto; padding: 30px; background: #0F172A; color: white; border: 1px solid #334155;">
+            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #1E293B; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-fire-burner text-danger fa-2x"></i>
             </div>
-            <h2 class="mb-2">Kitchen Display</h2>
+            <h2 class="mb-2" style="color: white;">Kitchen Display</h2>
             <p class="text-muted text-sm mb-4">Enter 4-Digit Chef PIN</p>
             
-            <input type="password" id="kitchen-passcode" class="input-group" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="font-size: 32px; text-align: center; letter-spacing: 15px; font-weight: bold; padding: 15px;" autocomplete="off">
+            <!-- FIXED PIN INPUT FIELD -->
+            <input type="password" id="kitchen-passcode" class="mx-auto" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="font-size: 32px; text-align: center; letter-spacing: 15px; font-weight: bold; padding: 12px; width: 200px; display: block; border-radius: 8px; border: 1px solid #475569; background: #1E293B; color: white; outline: none; margin-bottom: 15px;" autocomplete="off">
+            
             <p id="kitchen-login-error" class="text-danger text-sm hidden mt-2">Incorrect PIN!</p>
             
             <button id="btn-kitchen-login" class="btn-primary btn-large w-100 mt-4">
@@ -72,55 +74,7 @@
         </div>
 
         <!-- Orders Grid Container -->
-        <div id="kds-orders-grid" class="kds-grid hidden">
-            
-            <!-- Format Reference for JS (Ye card JavaScript banayega) -->
-            <!--
-            <div class="order-card timer-green" data-order-id="ORD123">
-                
-                <div class="kds-card-header d-flex-between">
-                    <h2>Tbl 05</h2>
-                    <span class="timer-badge">03:45 MIN</span>
-                </div>
-                
-                <div class="kds-card-meta d-flex-between">
-                    <span>ORD-12345</span>
-                    <span class="status-badge pending">NEW</span>
-                </div>
-
-                <div class="kds-card-body">
-                    <ul class="kds-item-list">
-                        <li class="kds-item">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" class="item-check">
-                                <span class="checkmark"></span>
-                                <span class="item-name">2x Paneer Tikka</span>
-                            </label>
-                        </li>
-                        <li class="kds-item">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" class="item-check">
-                                <span class="checkmark"></span>
-                                <span class="item-name">1x Cold Coffee</span>
-                            </label>
-                            <p class="cooking-note"><i class="fa-solid fa-message"></i> Less sugar</p>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="kds-card-footer">
-                    <button class="btn-kds-action btn-accept w-100">
-                        <i class="fa-solid fa-fire"></i> Accept & Prepare
-                    </button>
-                    <button class="btn-kds-action btn-ready w-100 hidden">
-                        <i class="fa-solid fa-check-double"></i> Mark Ready
-                    </button>
-                </div>
-
-            </div>
-            -->
-            
-        </div>
+        <div id="kds-orders-grid" class="kds-grid hidden"></div>
     </main>
 
     <!-- JavaScript Files -->
