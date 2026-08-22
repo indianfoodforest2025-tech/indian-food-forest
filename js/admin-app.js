@@ -1,10 +1,35 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, Cloudinary Menu, QR Gen, Payment)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment, Reset)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { adminLogout } from "./auth.js";
+
+// ==========================================================================
+// 0. ADMIN LOGIN SECURITY
+// ==========================================================================
+const loginScreen = document.getElementById('admin-login-screen');
+const btnAdminLogin = document.getElementById('btn-admin-login');
+const inputAdminPass = document.getElementById('admin-passcode');
+const loginError = document.getElementById('admin-login-error');
+
+// Check if already authenticated in this session
+if (sessionStorage.getItem('adminAuthenticated') === 'true') {
+    if (loginScreen) loginScreen.classList.add('hidden');
+}
+
+if (btnAdminLogin) {
+    btnAdminLogin.addEventListener('click', () => {
+        // Master Passcode is set to 7860
+        if (inputAdminPass.value === '7860') {
+            sessionStorage.setItem('adminAuthenticated', 'true');
+            loginScreen.classList.add('hidden');
+        } else {
+            loginError.classList.remove('hidden');
+        }
+    });
+}
 
 // DOM Elements - Sidebar Navigation
 const navItems = document.querySelectorAll('.nav-item');
@@ -14,28 +39,24 @@ const sectionTitle = document.getElementById('current-section-title');
 // DOM Elements - Toast & Alerts
 const waiterToast = document.getElementById('waiter-alert-toast');
 const waiterMsg = document.getElementById('waiter-alert-msg');
-const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Same KDS bell or softer ping
+const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
 // ==========================================================================
 // 1. SIDEBAR TAB NAVIGATION LOGIC
 // ==========================================================================
 navItems.forEach(item => {
     item.addEventListener('click', () => {
-        // Remove active class from all
         navItems.forEach(nav => nav.classList.remove('active'));
         sections.forEach(sec => sec.classList.add('hidden'));
         
-        // Add active class to clicked
         item.classList.add('active');
         const targetId = item.getAttribute('data-target');
         document.getElementById(targetId).classList.remove('hidden');
         
-        // Update Title
         sectionTitle.innerText = item.innerText;
     });
 });
 
-// Logout
 document.getElementById('btn-logout').addEventListener('click', adminLogout);
 
 
@@ -72,7 +93,6 @@ document.getElementById('dish-upload-form').addEventListener('submit', async (e)
     let imageUrl = null;
 
     try {
-        // Step A: Upload image to Cloudinary if file is selected
         if (imageFile) {
             const formData = new FormData();
             formData.append('file', imageFile);
@@ -83,11 +103,9 @@ document.getElementById('dish-upload-form').addEventListener('submit', async (e)
                 body: formData
             });
             const cloudData = await cloudRes.json();
-            
             imageUrl = cloudData.secure_url; 
         }
 
-        // Step B: Save/Update in Firestore
         const dishId = name.toLowerCase().replace(/\s+/g, '-'); 
         
         const dishData = {
@@ -111,18 +129,27 @@ document.getElementById('dish-upload-form').addEventListener('submit', async (e)
     }
 });
 
-// Real-time render Admin Menu List
+// Real-time render Admin Menu List & POS Menu Grid
+let globalMenuData = [];
 onSnapshot(collection(db, "menu"), (snapshot) => {
     const tbody = document.getElementById('admin-menu-list');
+    const posGrid = document.getElementById('pos-menu-grid');
+    
     tbody.innerHTML = '';
+    if(posGrid) posGrid.innerHTML = '';
+    globalMenuData = [];
     
     snapshot.forEach(docSnap => {
         const item = docSnap.data();
+        item.id = docSnap.id;
+        globalMenuData.push(item);
+
+        // 1. Admin Menu Manager Row
         const tr = document.createElement('tr');
         const img = item.imageUrl ? `<img src="${item.imageUrl}" class="dish-thumb">` : '<i class="fa-solid fa-image text-muted"></i>';
         const stockBtn = item.isAvailable 
-            ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${docSnap.id}', false)">Mark Out of Stock</button>`
-            : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${docSnap.id}', true)">Mark In Stock</button>`;
+            ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Mark Out of Stock</button>`
+            : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">Mark In Stock</button>`;
 
         tr.innerHTML = `
             <td>${img}</td>
@@ -133,6 +160,21 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
             <td>${stockBtn}</td>
         `;
         tbody.appendChild(tr);
+
+        // 2. Admin POS Menu Card
+        if(item.isAvailable && posGrid) {
+            const posCard = document.createElement('div');
+            posCard.className = 'table-card d-flex-between';
+            posCard.style.padding = '10px 15px';
+            posCard.innerHTML = `
+                <div>
+                    <strong>${item.name}</strong>
+                    <div class="text-muted text-sm">₹${item.price}</div>
+                </div>
+                <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')">Add +</button>
+            `;
+            posGrid.appendChild(posCard);
+        }
     });
 });
 
@@ -142,7 +184,112 @@ window.toggleStock = async function(id, status) {
 
 
 // ==========================================================================
-// 3. LIVE FLOOR GRID & PAYMENT APPROVAL
+// 3. POS / MANUAL ENTRY SYSTEM
+// ==========================================================================
+let posCart = {};
+
+window.addToPosCart = function(id) {
+    const item = globalMenuData.find(i => i.id === id);
+    if (!posCart[id]) {
+        posCart[id] = { ...item, qty: 0 };
+    }
+    posCart[id].qty += 1;
+    renderPosCart();
+};
+
+window.updatePosCart = function(id, change) {
+    if(posCart[id]) {
+        posCart[id].qty += change;
+        if(posCart[id].qty <= 0) delete posCart[id];
+        renderPosCart();
+    }
+};
+
+function renderPosCart() {
+    const list = document.getElementById('pos-cart-list');
+    const grandTotalEl = document.getElementById('pos-grand-total');
+    if(!list) return;
+
+    list.innerHTML = '';
+    let total = 0;
+
+    const cartKeys = Object.keys(posCart);
+    if(cartKeys.length === 0) {
+        list.innerHTML = '<p class="text-muted text-center mt-4">Cart is empty</p>';
+        grandTotalEl.innerText = '₹0';
+        return;
+    }
+
+    cartKeys.forEach(id => {
+        const item = posCart[id];
+        total += item.price * item.qty;
+        list.innerHTML += `
+            <div class="d-flex-between" style="border-bottom:1px solid #E2E8F0; padding:10px 0;">
+                <div>
+                    <div style="font-size:14px; font-weight:500;">${item.name}</div>
+                    <div style="font-size:13px; color:#64748B;">₹${item.price}</div>
+                </div>
+                <div class="input-group-inline">
+                    <button class="btn-secondary btn-sm" onclick="updatePosCart('${id}', -1)">-</button>
+                    <span style="width:20px; text-align:center;">${item.qty}</span>
+                    <button class="btn-secondary btn-sm" onclick="updatePosCart('${id}', 1)">+</button>
+                </div>
+            </div>
+        `;
+    });
+    grandTotalEl.innerText = `₹${total}`;
+}
+
+const btnPosCheckout = document.getElementById('btn-pos-checkout');
+if(btnPosCheckout) {
+    btnPosCheckout.addEventListener('click', async () => {
+        if(Object.keys(posCart).length === 0) return alert("Cart is empty!");
+        
+        btnPosCheckout.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        btnPosCheckout.disabled = true;
+
+        const tableNo = document.getElementById('pos-table-select').value;
+        const orderId = 'POS' + Date.now().toString().slice(-6);
+
+        let subtotal = 0;
+        const itemsArray = Object.values(posCart).map(i => {
+            subtotal += (i.qty * i.price);
+            return { id: i.id, name: i.name, qty: i.qty, price: i.price };
+        });
+
+        const orderData = {
+            orderId: orderId,
+            tableNo: tableNo,
+            customerName: "Counter / Parcel",
+            customerPhone: "N/A",
+            items: itemsArray,
+            instructions: "Manual Admin Entry",
+            subtotal: subtotal,
+            tax: 0,
+            totalAmount: subtotal,
+            status: 'pending',
+            paymentStatus: 'paid', // POS orders are usually pre-paid at counter
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            await setDoc(doc(db, "orders", orderId), orderData);
+            alert("Order sent to Kitchen!");
+            posCart = {};
+            renderPosCart();
+        } catch (error) {
+            console.error("Order Failed: ", error);
+            alert("Order failed!");
+        } finally {
+            btnPosCheckout.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send to Kitchen';
+            btnPosCheckout.disabled = false;
+        }
+    });
+}
+
+
+// ==========================================================================
+// 4. LIVE FLOOR GRID & PRINT BILL
 // ==========================================================================
 const tablesGrid = document.getElementById('tables-grid');
 
@@ -187,7 +334,14 @@ onSnapshot(collection(db, "tables"), async (snapshot) => {
                             <p class="bill-amt">₹${ordData.totalAmount}</p>
                             <span class="status-badge ${ordData.status === 'completed' ? 'paid' : 'preparing'}">${ordData.status.toUpperCase()}</span>
                         `;
-                        actionHtml = `<button class="btn-success btn-sm w-100 mt-2" onclick="approvePayment('${ordData.orderId}', '${table.id}')">Mark Paid & Clear Table</button>`;
+                        actionHtml = `
+                            <button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')">
+                                <i class="fa-solid fa-print"></i> Print Bill
+                            </button>
+                            <button class="btn-success btn-sm w-100" onclick="approvePayment('${ordData.orderId}', '${table.id}')">
+                                <i class="fa-solid fa-check"></i> Mark Paid & Clear
+                            </button>
+                        `;
                     }
                 }
             }
@@ -224,9 +378,53 @@ window.approvePayment = async function(orderId, tableId) {
     }
 };
 
+// DIRECT THERMAL PRINTING LOGIC
+window.printOrderBill = async function(orderId) {
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) return alert("Order not found!");
+    const data = orderSnap.data();
+
+    let itemsHtml = '';
+    data.items.forEach(i => {
+        itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
+    });
+
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.write(`
+        <html>
+        <head><title>Bill - ${data.orderId}</title></head>
+        <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
+            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
+                <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
+                <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
+                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
+            </div>
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
+                <tr><th style="text-align:left; padding-bottom:5px;">Item</th><th>Qty</th><th style="text-align:right;">Amt</th></tr>
+                ${itemsHtml}
+            </table>
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <div style="display:flex; justify-content:space-between; font-size: 16px; font-weight:bold; margin-top:10px;">
+                <span>GRAND TOTAL</span>
+                <span>₹${data.totalAmount}</span>
+            </div>
+            <p style="text-align:center; font-size:11px; margin-top:20px;">Thank You! Visit Again.</p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+};
+
 
 // ==========================================================================
-// 4. BULK SECURE QR GENERATOR (FORCED CUSTOM SUBDOMAIN)
+// 5. BULK SECURE QR GENERATOR
 // ==========================================================================
 document.getElementById('btn-generate-qrs').addEventListener('click', async () => {
     const count = Number(document.getElementById('qr-table-count').value);
@@ -234,8 +432,6 @@ document.getElementById('btn-generate-qrs').addEventListener('click', async () =
     const actionsBox = document.getElementById('qr-actions-box');
     
     qrGrid.innerHTML = ''; 
-    
-    // Fixed custom subdomain for QR codes
     const baseUrl = "https://order.indianfoodforest.com/";
 
     for (let i = 1; i <= count; i++) {
@@ -258,10 +454,8 @@ document.getElementById('btn-generate-qrs').addEventListener('click', async () =
 
         new QRCode(document.getElementById(`qr-box-${tableId}`), {
             text: scanUrl,
-            width: 128,
-            height: 128,
-            colorDark : "#0F172A",
-            colorLight : "#ffffff",
+            width: 128, height: 128,
+            colorDark : "#0F172A", colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
     }
@@ -273,3 +467,37 @@ document.getElementById('btn-generate-qrs').addEventListener('click', async () =
 document.getElementById('btn-print-qrs').addEventListener('click', () => {
     window.print();
 });
+
+
+// ==========================================================================
+// 6. MASTER DATABASE RESET (END OF DAY WIPE)
+// ==========================================================================
+const btnFactoryReset = document.getElementById('btn-factory-reset');
+if (btnFactoryReset) {
+    btnFactoryReset.addEventListener('click', async () => {
+        // Master Passcode is set to 7860
+        const pass = prompt("Enter Master Passcode to Wipe Data:");
+        if (pass === "7860") {
+            if (confirm("WARNING: This will clear all active tables. Do you want to continue?")) {
+                try {
+                    const tablesSnap = await getDocs(collection(db, "tables"));
+                    tablesSnap.forEach(tableDoc => {
+                        const newToken = Math.random().toString(36).substring(2, 10);
+                        updateDoc(doc(db, "tables", tableDoc.id), { 
+                            status: 'free', 
+                            activeOrderId: null,
+                            secret: newToken
+                        });
+                    });
+                    alert("System Reset Complete! All tables are free.");
+                    window.location.reload();
+                } catch (err) {
+                    alert("Error resetting database.");
+                    console.error(err);
+                }
+            }
+        } else if (pass !== null) {
+            alert("Incorrect Passcode!");
+        }
+    });
+}
