@@ -120,6 +120,11 @@ if (isMenuPage) {
     }
 
     document.getElementById('btn-view-cart').addEventListener('click', () => {
+        if (Object.keys(cart).length === 0) {
+            showToast("Please add items to cart first!");
+            return;
+        }
+
         const cartList = document.getElementById('cart-items-list');
         cartList.innerHTML = '';
         let subtotal = 0;
@@ -240,7 +245,6 @@ if (isStatusPage) {
                 pdfBtn.classList.remove('hidden');
                 gmbSection.classList.remove('hidden');
 
-                // FIX: Prevent going back to menu loop once paid
                 history.pushState(null, null, location.href);
                 window.onpopstate = function () {
                     history.go(1);
@@ -292,8 +296,6 @@ if (isStatusPage) {
 
     document.getElementById('btn-download-pdf').addEventListener('click', () => {
         const element = document.getElementById('invoice-receipt');
-        
-        // FIX: Added useCORS and scrollY: 0 to prevent blank white PDF rendering
         const opt = {
             margin: 0,
             filename: `${orderId}_Bill.pdf`,
@@ -301,7 +303,6 @@ if (isStatusPage) {
             html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
             jsPDF: { unit: 'in', format: [3.15, 6], orientation: 'portrait' }
         };
-        
         html2pdf().set(opt).from(element).save();
     });
 }
