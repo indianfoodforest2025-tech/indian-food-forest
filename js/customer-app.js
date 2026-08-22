@@ -239,6 +239,12 @@ if (isStatusPage) {
                 paymentBadge.innerText = 'PAID IN FULL';
                 pdfBtn.classList.remove('hidden');
                 gmbSection.classList.remove('hidden');
+
+                // FIX: Prevent going back to menu loop once paid
+                history.pushState(null, null, location.href);
+                window.onpopstate = function () {
+                    history.go(1);
+                };
             } else {
                 paymentBadge.className = 'status-badge pending';
                 paymentBadge.innerText = 'PAYMENT PENDING';
@@ -286,13 +292,16 @@ if (isStatusPage) {
 
     document.getElementById('btn-download-pdf').addEventListener('click', () => {
         const element = document.getElementById('invoice-receipt');
+        
+        // FIX: Added useCORS and scrollY: 0 to prevent blank white PDF rendering
         const opt = {
             margin: 0,
             filename: `${orderId}_Bill.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
             jsPDF: { unit: 'in', format: [3.15, 6], orientation: 'portrait' }
         };
+        
         html2pdf().set(opt).from(element).save();
     });
 }
