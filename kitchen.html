@@ -16,6 +16,26 @@
 </head>
 <body class="admin-body kds-theme">
 
+    <!-- ============================================== -->
+    <!-- 0. KITCHEN SECURE PIN OVERLAY -->
+    <!-- ============================================== -->
+    <div id="kitchen-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 9999;">
+        <div class="modal-card text-center shadow-lg">
+            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-fire-burner text-danger fa-2x"></i>
+            </div>
+            <h2 class="mb-2">Kitchen Display</h2>
+            <p class="text-muted text-sm mb-4">Enter 4-Digit Chef PIN</p>
+            
+            <input type="password" id="kitchen-passcode" class="input-group" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="font-size: 32px; text-align: center; letter-spacing: 15px; font-weight: bold; padding: 15px;" autocomplete="off">
+            <p id="kitchen-login-error" class="text-danger text-sm hidden mt-2">Incorrect PIN!</p>
+            
+            <button id="btn-kitchen-login" class="btn-primary btn-large w-100 mt-4">
+                <i class="fa-solid fa-unlock-keyhole"></i> Enter Kitchen
+            </button>
+        </div>
+    </div>
+
     <!-- 1. HIDDEN AUDIO TAG (For Loud Kitchen Bell Loop) -->
     <!-- Sound source will be handled in JS, but tag is pre-defined here -->
     <audio id="kds-audio-bell" loop preload="auto">
