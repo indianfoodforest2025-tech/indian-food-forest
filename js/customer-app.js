@@ -119,9 +119,26 @@ if (isMenuPage) {
         }
     }
 
-    document.getElementById('btn-view-cart').addEventListener('click', () => {
-        if (Object.keys(cart).length === 0) {
+    // SAFE VIEW CART HANDLER (Double Check)
+    const viewCartBtn = document.getElementById('btn-view-cart');
+    if (viewCartBtn) {
+        viewCartBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop event bubbling
+            openCartModal();
+        });
+    }
+
+    // Floating bar click handler safety
+    if (cartBar) {
+        cartBar.addEventListener('click', () => {
+            openCartModal();
+        });
+    }
+
+    function openCartModal() {
+        if (!cart || Object.keys(cart).length === 0) {
             showToast("Please add items to cart first!");
+            cartModal.classList.add('hidden');
             return;
         }
 
@@ -149,7 +166,7 @@ if (isMenuPage) {
         document.getElementById('bill-subtotal').innerText = `₹${subtotal}`;
         document.getElementById('bill-grand-total').innerText = `₹${grandTotal}`;
         cartModal.classList.remove('hidden');
-    });
+    }
 
     document.getElementById('btn-close-cart').addEventListener('click', () => {
         cartModal.classList.add('hidden');
@@ -165,6 +182,11 @@ if (isMenuPage) {
     });
 
     document.getElementById('btn-place-order').addEventListener('click', async () => {
+        if (!cart || Object.keys(cart).length === 0) {
+            showToast("Cart is empty!");
+            return;
+        }
+
         const btn = document.getElementById('btn-place-order');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending to Kitchen...';
         btn.disabled = true;
