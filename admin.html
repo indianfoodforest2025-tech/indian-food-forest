@@ -20,6 +20,26 @@
 </head>
 <body class="admin-body">
 
+    <!-- ============================================== -->
+    <!-- 0. ADMIN SECURE LOGIN OVERLAY -->
+    <!-- ============================================== -->
+    <div id="admin-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 9999;">
+        <div class="modal-card text-center shadow-lg">
+            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-leaf text-success fa-2x"></i>
+            </div>
+            <h2 class="mb-2">Admin Portal</h2>
+            <p class="text-muted text-sm mb-4">Enter Master Passcode to access</p>
+            
+            <input type="password" id="admin-passcode" class="input-group" placeholder="••••" style="font-size: 28px; text-align: center; letter-spacing: 12px; font-weight: bold; padding: 15px;" autocomplete="off">
+            <p id="admin-login-error" class="text-danger text-sm hidden mt-2">Incorrect Passcode!</p>
+            
+            <button id="btn-admin-login" class="btn-primary btn-large w-100 mt-4">
+                <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
+            </button>
+        </div>
+    </div>
+
     <!-- 1. SIDEBAR NAVIGATION -->
     <aside class="sidebar">
         <div class="sidebar-brand">
@@ -30,6 +50,9 @@
         <ul class="sidebar-nav">
             <li class="nav-item active" data-target="section-tables">
                 <i class="fa-solid fa-border-all"></i> Live Floor Grid
+            </li>
+            <li class="nav-item" data-target="section-pos">
+                <i class="fa-solid fa-cash-register"></i> POS / Manual Order
             </li>
             <li class="nav-item" data-target="section-menu">
                 <i class="fa-solid fa-burger"></i> Menu & Stock
@@ -81,29 +104,69 @@
             </div>
 
             <!-- Tables Grid (Populated by JS) -->
-            <div id="tables-grid" class="tables-grid">
-                <!-- Card Format Reference -->
-                <!--
-                <div class="table-card occupied" data-table="1">
-                    <div class="card-head d-flex-between">
-                        <h3>T-01</h3>
-                        <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
-                    </div>
-                    <div class="card-body">
-                        <p class="cust-name">Rahul</p>
-                        <p class="bill-amt">₹598</p>
-                    </div>
-                    <div class="card-foot">
-                        <button class="btn-success btn-sm w-100">Mark Paid & Clear</button>
+            <div id="tables-grid" class="tables-grid"></div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SECTION B: POS / MANUAL ENTRY -->
+        <!-- ============================================== -->
+        <section id="section-pos" class="admin-section hidden fade-in">
+            <div class="section-header">
+                <p>Create manual orders for Walk-ins or Parcels directly to the Kitchen.</p>
+            </div>
+            
+            <!-- POS Split Layout -->
+            <div style="display: flex; gap: 20px; height: calc(100vh - 180px);">
+                <!-- Menu Items List -->
+                <div style="flex: 2; overflow-y: auto; padding-right: 10px;">
+                    <div class="tables-grid" id="pos-menu-grid">
+                        <!-- JS Injected POS Dish Cards -->
                     </div>
                 </div>
-                -->
+                
+                <!-- Cart & Checkout Details -->
+                <div style="flex: 1; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; padding: 20px;">
+                    <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">Order Cart</h3>
+                    
+                    <label class="text-sm text-muted">Select Table / Order Type</label>
+                    <select id="pos-table-select" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid var(--border-color); font-family: inherit;">
+                        <option value="Parcel">Parcel / Takeaway</option>
+                        <option value="1">Table 1</option>
+                        <option value="2">Table 2</option>
+                        <option value="3">Table 3</option>
+                        <option value="4">Table 4</option>
+                        <option value="5">Table 5</option>
+                        <option value="6">Table 6</option>
+                        <option value="7">Table 7</option>
+                        <option value="8">Table 8</option>
+                        <option value="9">Table 9</option>
+                        <option value="10">Table 10</option>
+                        <option value="11">Table 11</option>
+                        <option value="12">Table 12</option>
+                        <option value="13">Table 13</option>
+                        <option value="14">Table 14</option>
+                        <option value="15">Table 15</option>
+                    </select>
+
+                    <div id="pos-cart-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
+                        <p class="text-muted text-center mt-4">Cart is empty</p>
+                    </div>
+
+                    <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
+                        <div class="d-flex-between mb-3">
+                            <span>Grand Total</span>
+                            <strong id="pos-grand-total" style="font-size: 22px; color: var(--primary-blue);">₹0</strong>
+                        </div>
+                        <button id="btn-pos-checkout" class="btn-success w-100 btn-large">
+                            <i class="fa-solid fa-paper-plane"></i> Send to Kitchen
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- SECTION B: MENU MANAGER (Cloudinary Upload) -->
+        <!-- SECTION C: MENU MANAGER (Cloudinary Upload) -->
         <!-- ============================================== -->
         <section id="section-menu" class="admin-section hidden fade-in">
             <div class="section-header d-flex-between">
@@ -133,9 +196,8 @@
             </div>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- SECTION C: QR CODE GENERATOR -->
+        <!-- SECTION D: QR CODE GENERATOR -->
         <!-- ============================================== -->
         <section id="section-qr" class="admin-section hidden fade-in">
             <div class="card-white mx-auto text-center" style="max-width: 600px;">
@@ -155,14 +217,12 @@
                     </button>
                 </div>
 
-                <!-- QR Grid (Hidden during normal view, visible during print) -->
                 <div id="qr-display-grid" class="qr-grid mt-4"></div>
             </div>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- SECTION D: SALES REPORTS & ANALYTICS -->
+        <!-- SECTION E: SALES REPORTS & ANALYTICS -->
         <!-- ============================================== -->
         <section id="section-reports" class="admin-section hidden fade-in">
             <div class="section-header d-flex-between">
@@ -174,9 +234,6 @@
                 <div class="report-actions">
                     <button id="btn-export-csv" class="btn-outline-success">
                         <i class="fa-solid fa-file-csv"></i> Export CSV
-                    </button>
-                    <button id="btn-end-of-day" class="btn-danger">
-                        <i class="fa-solid fa-power-off"></i> End of Day Reset
                     </button>
                 </div>
             </div>
@@ -209,6 +266,15 @@
             <!-- Chart Container -->
             <div class="chart-container mt-4 bg-white rounded shadow-sm p-4">
                 <canvas id="salesChart" height="100"></canvas>
+            </div>
+
+            <!-- DANGER ZONE -->
+            <div class="mt-4 p-4 rounded text-center" style="border: 1px dashed var(--danger-red); background: #FEF2F2;">
+                <h4 class="text-danger mb-2"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
+                <p class="text-sm text-muted mb-3">This action will permanently delete all active orders and free up all tables. (Requires Master Passcode)</p>
+                <button id="btn-factory-reset" class="btn-danger btn-large">
+                    Wipe Database (End of Day Reset)
+                </button>
             </div>
         </section>
         
