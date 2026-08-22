@@ -1,11 +1,39 @@
 // ==========================================================================
-// KITCHEN KDS LOGIC (Live Orders, Timer, & Audio Alarm)
+// KITCHEN KDS LOGIC (Live Orders, Timer, Audio Alarm & Security)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
 import { collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// ==========================================================================
+// 0. KITCHEN LOGIN SECURITY (PIN: 7860)
+// ==========================================================================
+const loginScreen = document.getElementById('kitchen-login-screen');
+const btnKitchenLogin = document.getElementById('btn-kitchen-login');
+const inputKitchenPass = document.getElementById('kitchen-passcode');
+const loginError = document.getElementById('kitchen-login-error');
+
+// Check if already authenticated in this session
+if (sessionStorage.getItem('kitchenAuthenticated') === 'true') {
+    if (loginScreen) loginScreen.classList.add('hidden');
+}
+
+if (btnKitchenLogin) {
+    btnKitchenLogin.addEventListener('click', () => {
+        // Kitchen Passcode is set to 7860
+        if (inputKitchenPass.value === '7860') {
+            sessionStorage.setItem('kitchenAuthenticated', 'true');
+            loginScreen.classList.add('hidden');
+        } else {
+            loginError.classList.remove('hidden');
+        }
+    });
+}
+
+
+// ==========================================================================
 // DOM Elements
+// ==========================================================================
 const ordersGrid = document.getElementById('kds-orders-grid');
 const emptyState = document.getElementById('kds-empty-state');
 const clockEl = document.getElementById('kds-live-clock');
