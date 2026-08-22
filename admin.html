@@ -24,14 +24,16 @@
     <!-- 0. ADMIN SECURE LOGIN OVERLAY -->
     <!-- ============================================== -->
     <div id="admin-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 9999;">
-        <div class="modal-card text-center shadow-lg">
+        <div class="modal-card text-center shadow-lg" style="max-width: 360px; margin: auto; padding: 30px;">
             <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-leaf text-success fa-2x"></i>
             </div>
             <h2 class="mb-2">Admin Portal</h2>
             <p class="text-muted text-sm mb-4">Enter Master Passcode to access</p>
             
-            <input type="password" id="admin-passcode" class="input-group" placeholder="••••" style="font-size: 28px; text-align: center; letter-spacing: 12px; font-weight: bold; padding: 15px;" autocomplete="off">
+            <!-- FIXED PASSCODE INPUT FIELD -->
+            <input type="password" id="admin-passcode" class="mx-auto" placeholder="••••" style="font-size: 28px; text-align: center; letter-spacing: 12px; font-weight: bold; padding: 12px; width: 200px; display: block; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; margin-bottom: 15px;" autocomplete="off" maxlength="4">
+            
             <p id="admin-login-error" class="text-danger text-sm hidden mt-2">Incorrect Passcode!</p>
             
             <button id="btn-admin-login" class="btn-primary btn-large w-100 mt-4">
