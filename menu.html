@@ -14,42 +14,9 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/customer.css">
 
-    <!-- FIX FOR MOBILE: Keep Place Order Button Locked at Bottom -->
+    <!-- STRICT FIX: Force Hidden Elements to stay Hidden -->
     <style>
-        #cart-review-modal .modal-card {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            max-height: 85vh !important;
-            max-height: 85dvh !important; /* For mobile browser bottom bars */
-            display: flex !important;
-            flex-direction: column !important;
-            background: white !important;
-            border-radius: 24px 24px 0 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        #cart-review-modal .modal-header {
-            padding: 20px !important;
-            border-bottom: 1px solid #E2E8F0 !important;
-            flex-shrink: 0 !important;
-        }
-        #cart-review-modal .modal-body {
-            flex: 1 1 auto !important;
-            overflow-y: auto !important;
-            padding: 20px !important;
-            -webkit-overflow-scrolling: touch !important; /* Smooth scroll on iOS */
-        }
-        #cart-review-modal .modal-footer {
-            padding: 15px 20px 25px 20px !important;
-            background: white !important;
-            border-top: 1px solid #E2E8F0 !important;
-            position: sticky !important;
-            bottom: 0 !important;
-            z-index: 10 !important;
-            flex-shrink: 0 !important;
-        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="customer-body bg-light">
@@ -126,13 +93,13 @@
         <div class="menu-bottom-spacer" style="height: 100px;"></div>
     </main>
 
-    <!-- 3. FLOATING BOTTOM CART BAR -->
-    <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart" onclick="document.getElementById('btn-view-cart').click()" style="cursor: pointer; background: #0F172A; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 999; width: calc(100% - 40px); max-width: 440px; box-sizing: border-box; position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);">
-        <div class="cart-summary" style="display: flex; flex-direction: column; gap: 2px;">
-            <span id="cart-item-count" class="item-count" style="font-size: 11px; color: #94A3B8; font-weight: 600; letter-spacing: 0.5px;">0 ITEMS</span>
-            <span id="cart-total-price" class="total-price" style="font-size: 16px; font-weight: 700; color: white;">₹0</span>
+    <!-- 3. FLOATING BOTTOM CART BAR (Inline styles hata diye taaki hide/show properly kaam kare) -->
+    <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart" onclick="document.getElementById('btn-view-cart').click()">
+        <div class="cart-summary">
+            <span id="cart-item-count" class="item-count">0 ITEMS</span>
+            <span id="cart-total-price" class="total-price">₹0</span>
         </div>
-        <button id="btn-view-cart" class="btn-checkout" style="background: #16A34A; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        <button id="btn-view-cart" class="btn-checkout" style="background: transparent; border: none; outline: none;">
             View Cart <i class="fa-solid fa-arrow-right"></i>
         </button>
     </div>
@@ -142,7 +109,8 @@
         <div class="modal-card bottom-sheet slide-up">
             <div class="modal-header d-flex-between">
                 <h3>Your Order</h3>
-                <button id="btn-close-cart" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                <!-- DIRECT FIX for Cross Button -->
+                <button id="btn-close-cart" class="btn-icon" onclick="document.getElementById('cart-review-modal').classList.add('hidden');"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="modal-body cart-body">
@@ -153,17 +121,8 @@
                     <textarea id="cooking-instructions" rows="2" placeholder="E.g., Less spicy, no onions..."></textarea>
                 </div>
                 
-                <div class="bill-summary">
-                    <div class="bill-row">
-                        <span>Subtotal</span>
-                        <span id="bill-subtotal">₹0</span>
-                    </div>
-                    <hr>
-                    <div class="bill-row grand-total">
-                        <span>Grand Total</span>
-                        <span id="bill-grand-total">₹0</span>
-                    </div>
-                </div>
+                <!-- BILL SUMMARY HATA DIYA GAYA HAI -->
+                
             </div>
             
             <div class="modal-footer">
