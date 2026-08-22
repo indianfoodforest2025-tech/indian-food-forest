@@ -242,7 +242,12 @@
 /* =========================================================
    ULTIMATE STICKY CART MODAL FIX (BILL & BUTTON LOCKED AT BOTTOM)
    ========================================================= */
-#cart-review-modal.modal-overlay {
+/* FIX: Modal will ACTUALLY hide when 'hidden' class is applied */
+#cart-review-modal.modal-overlay.hidden {
+    display: none !important;
+}
+
+#cart-review-modal.modal-overlay:not(.hidden) {
     display: flex !important;
     align-items: flex-end !important;
     padding: 0 !important;
