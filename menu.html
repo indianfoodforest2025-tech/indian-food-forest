@@ -13,39 +13,6 @@
     <!-- CSS Links -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/customer.css">
-    
-    <!-- FIX FOR MOBILE: Keep Place Order Button Locked at Bottom -->
-    <style>
-        #cart-review-modal .modal-card {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            border-radius: 24px 24px 0 0;
-            padding: 0;
-        }
-        #cart-review-modal .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #E2E8F0;
-        }
-        #cart-review-modal .modal-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        #cart-review-modal .modal-footer {
-            padding: 15px 20px 25px 20px;
-            background: white;
-            border-top: 1px solid #E2E8F0;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
-        }
-    </style>
 </head>
 <body class="customer-body bg-light">
 
@@ -121,7 +88,7 @@
         <div class="menu-bottom-spacer" style="height: 100px;"></div>
     </main>
 
-    <!-- 3. FLOATING BOTTOM CART BAR (FIXED FOR MOBILE) -->
+    <!-- 3. FLOATING BOTTOM CART BAR -->
     <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart" onclick="document.getElementById('btn-view-cart').click()" style="cursor: pointer; background: #0F172A; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 999; width: calc(100% - 40px); max-width: 440px; box-sizing: border-box; position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);">
         <div class="cart-summary" style="display: flex; flex-direction: column; gap: 2px;">
             <span id="cart-item-count" class="item-count" style="font-size: 11px; color: #94A3B8; font-weight: 600; letter-spacing: 0.5px;">0 ITEMS</span>
@@ -152,11 +119,6 @@
                     <div class="bill-row">
                         <span>Subtotal</span>
                         <span id="bill-subtotal">₹0</span>
-                    </div>
-                    <!-- GST Hidden -->
-                    <div class="bill-row hidden" style="display: none;">
-                        <span>Taxes (GST)</span>
-                        <span id="bill-tax">₹0</span>
                     </div>
                     <hr>
                     <div class="bill-row grand-total">
