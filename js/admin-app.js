@@ -465,3 +465,46 @@ window.printOrderBill = async function(orderId) {
             <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
                 <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
                 <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeSt
+                                                       window.printOrderBill = async function(orderId) {
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) return alert("Order not found!");
+    const data = orderSnap.data();
+
+    let itemsHtml = '';
+    data.items.forEach(i => {
+        itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
+    });
+
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.write(`
+        <html>
+        <head><title>Bill - ${data.orderId}</title></head>
+        <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
+            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
+                <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
+                <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
+                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
+            </div>
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
+                <tr><th style="text-align:left; padding-bottom:5px;">Item</th><th>Qty</th><th style="text-align:right;">Amt</th></tr>
+                ${itemsHtml}
+            </table>
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <div style="display:flex; justify-content:space-between; font-size: 16px; font-weight:bold; margin-top:10px;">
+                <span>GRAND TOTAL</span>
+                <span>₹${data.totalAmount}</span>
+            </div>
+            <p style="text-align:center; font-size:11px; margin-top:20px;">Thank You! Visit Again.</p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+};
+
