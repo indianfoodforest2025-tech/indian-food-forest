@@ -7,7 +7,7 @@ import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc
 import { adminLogout } from "./auth.js";
 
 // ==========================================================================
-// 0. ADMIN LOGIN SECURITY
+// 0. ADMIN LOGIN SECURITY (FIXED)
 // ==========================================================================
 const loginScreen = document.getElementById('admin-login-screen');
 const btnAdminLogin = document.getElementById('btn-admin-login');
@@ -16,17 +16,26 @@ const loginError = document.getElementById('admin-login-error');
 
 // Check if already authenticated in this session
 if (sessionStorage.getItem('adminAuthenticated') === 'true') {
-    if (loginScreen) loginScreen.classList.add('hidden');
+    if (loginScreen) {
+        loginScreen.classList.add('hidden');
+        loginScreen.style.display = 'none'; // DIRECT FIX: Force hide
+    }
 }
 
 if (btnAdminLogin) {
     btnAdminLogin.addEventListener('click', () => {
-        // Master Passcode is set to 7860
-        if (inputAdminPass.value === '7860') {
+        // Master Passcode is set to 7860 (.trim() added for extra safety)
+        if (inputAdminPass.value.trim() === '7860') {
             sessionStorage.setItem('adminAuthenticated', 'true');
-            loginScreen.classList.add('hidden');
+            if (loginScreen) {
+                loginScreen.classList.add('hidden');
+                loginScreen.style.display = 'none'; // DIRECT FIX: Force hide
+            }
         } else {
-            loginError.classList.remove('hidden');
+            if (loginError) {
+                loginError.classList.remove('hidden');
+                loginError.style.display = 'block'; // Show error properly
+            }
         }
     });
 }
@@ -55,14 +64,14 @@ navItems.forEach(item => {
         
         sectionTitle.innerText = item.innerText;
         
-        // Auto-load reports if Reports tab is clicked
-        if (targetId === 'section-reports') {
-            loadReport();
-        }
+        // Removed auto-load for reports here, as it's handled in reports-app.js now
     });
 });
 
-document.getElementById('btn-logout').addEventListener('click', adminLogout);
+const btnLogout = document.getElementById('btn-logout');
+if (btnLogout) {
+    btnLogout.addEventListener('click', adminLogout);
+}
 
 
 // ==========================================================================
@@ -73,66 +82,80 @@ const UPLOAD_PRESET = 'indian_food_preset';
 
 const modalAddDish = document.getElementById('add-dish-modal');
 const btnSaveDish = document.getElementById('btn-save-dish');
+const btnOpenAddModal = document.getElementById('btn-open-add-modal');
+const btnCloseDishModal = document.getElementById('btn-close-dish-modal');
+const dishUploadForm = document.getElementById('dish-upload-form');
 
-document.getElementById('btn-open-add-modal').addEventListener('click', () => {
-    document.getElementById('dish-upload-form').reset();
-    modalAddDish.classList.remove('hidden');
-});
+if (btnOpenAddModal) {
+    btnOpenAddModal.addEventListener('click', () => {
+        if (dishUploadForm) dishUploadForm.reset();
+        if (modalAddDish) modalAddDish.classList.remove('hidden');
+    });
+}
 
-document.getElementById('btn-close-dish-modal').addEventListener('click', () => {
-    modalAddDish.classList.add('hidden');
-});
+if (btnCloseDishModal) {
+    btnCloseDishModal.addEventListener('click', () => {
+        if (modalAddDish) modalAddDish.classList.add('hidden');
+    });
+}
 
-document.getElementById('dish-upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    btnSaveDish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
-    btnSaveDish.disabled = true;
-
-    const name = document.getElementById('input-dish-name').value;
-    const category = document.getElementById('input-dish-category').value;
-    const price = Number(document.getElementById('input-dish-price').value);
-    const type = document.getElementById('input-dish-type').value;
-    const imageFile = document.getElementById('input-dish-image').files[0];
-
-    let imageUrl = null;
-
-    try {
-        if (imageFile) {
-            const formData = new FormData();
-            formData.append('file', imageFile);
-            formData.append('upload_preset', UPLOAD_PRESET);
-
-            const cloudRes = await fetch(CLOUDINARY_URL, {
-                method: 'POST',
-                body: formData
-            });
-            const cloudData = await cloudRes.json();
-            imageUrl = cloudData.secure_url; 
+if (dishUploadForm) {
+    dishUploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (btnSaveDish) {
+            btnSaveDish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+            btnSaveDish.disabled = true;
         }
 
-        const dishId = name.toLowerCase().replace(/\s+/g, '-'); 
-        
-        const dishData = {
-            name, category, price, type,
-            isAvailable: true,
-            timestamp: new Date().toISOString()
-        };
-        
-        if (imageUrl) dishData.imageUrl = imageUrl;
+        const name = document.getElementById('input-dish-name').value;
+        const category = document.getElementById('input-dish-category').value;
+        const price = Number(document.getElementById('input-dish-price').value);
+        const type = document.getElementById('input-dish-type').value;
+        const imageFileInput = document.getElementById('input-dish-image');
+        const imageFile = imageFileInput ? imageFileInput.files[0] : null;
 
-        await setDoc(doc(db, "menu", dishId), dishData, { merge: true });
-        
-        alert("Dish saved successfully!");
-        modalAddDish.classList.add('hidden');
-    } catch (error) {
-        console.error("Upload Error:", error);
-        alert("Error saving dish. Check console.");
-    } finally {
-        btnSaveDish.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish';
-        btnSaveDish.disabled = false;
-    }
-});
+        let imageUrl = null;
+
+        try {
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append('file', imageFile);
+                formData.append('upload_preset', UPLOAD_PRESET);
+
+                const cloudRes = await fetch(CLOUDINARY_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const cloudData = await cloudRes.json();
+                imageUrl = cloudData.secure_url; 
+            }
+
+            const dishId = name.toLowerCase().replace(/\s+/g, '-'); 
+            
+            const dishData = {
+                name, category, price, type,
+                isAvailable: true,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (imageUrl) dishData.imageUrl = imageUrl;
+
+            await setDoc(doc(db, "menu", dishId), dishData, { merge: true });
+            
+            alert("Dish saved successfully!");
+            if (modalAddDish) modalAddDish.classList.add('hidden');
+        } catch (error) {
+            console.error("Upload Error:", error);
+            alert("Error saving dish. Check console.");
+        } finally {
+            if (btnSaveDish) {
+                btnSaveDish.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish';
+                btnSaveDish.disabled = false;
+            }
+        }
+    });
+}
 
 // Real-time render Admin Menu List & POS Menu Grid
 let globalMenuData = [];
@@ -140,8 +163,8 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
     const tbody = document.getElementById('admin-menu-list');
     const posGrid = document.getElementById('pos-menu-grid');
     
-    tbody.innerHTML = '';
-    if(posGrid) posGrid.innerHTML = '';
+    if (tbody) tbody.innerHTML = '';
+    if (posGrid) posGrid.innerHTML = '';
     globalMenuData = [];
     
     snapshot.forEach(docSnap => {
@@ -150,21 +173,23 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
         globalMenuData.push(item);
 
         // 1. Admin Menu Manager Row
-        const tr = document.createElement('tr');
-        const img = item.imageUrl ? `<img src="${item.imageUrl}" class="dish-thumb">` : '<i class="fa-solid fa-image text-muted"></i>';
-        const stockBtn = item.isAvailable 
-            ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Mark Out of Stock</button>`
-            : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">Mark In Stock</button>`;
+        if (tbody) {
+            const tr = document.createElement('tr');
+            const img = item.imageUrl ? `<img src="${item.imageUrl}" class="dish-thumb">` : '<i class="fa-solid fa-image text-muted"></i>';
+            const stockBtn = item.isAvailable 
+                ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Mark Out of Stock</button>`
+                : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">Mark In Stock</button>`;
 
-        tr.innerHTML = `
-            <td>${img}</td>
-            <td><strong>${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}">${item.type.toUpperCase()}</small></td>
-            <td>${item.category.toUpperCase()}</td>
-            <td>₹${item.price}</td>
-            <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'IN STOCK' : 'OUT'}</span></td>
-            <td>${stockBtn}</td>
-        `;
-        tbody.appendChild(tr);
+            tr.innerHTML = `
+                <td>${img}</td>
+                <td><strong>${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}">${item.type.toUpperCase()}</small></td>
+                <td>${item.category.toUpperCase()}</td>
+                <td>₹${item.price}</td>
+                <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'IN STOCK' : 'OUT'}</span></td>
+                <td>${stockBtn}</td>
+            `;
+            tbody.appendChild(tr);
+        }
 
         // 2. Admin POS Menu Card
         if(item.isAvailable && posGrid) {
@@ -222,7 +247,7 @@ function renderPosCart() {
     const cartKeys = Object.keys(posCart);
     if(cartKeys.length === 0) {
         list.innerHTML = '<p class="text-muted text-center mt-4">Cart is empty</p>';
-        grandTotalEl.innerText = '₹0';
+        if (grandTotalEl) grandTotalEl.innerText = '₹0';
         return;
     }
 
@@ -243,7 +268,7 @@ function renderPosCart() {
             </div>
         `;
     });
-    grandTotalEl.innerText = `₹${total}`;
+    if (grandTotalEl) grandTotalEl.innerText = `₹${total}`;
 }
 
 const btnPosCheckout = document.getElementById('btn-pos-checkout');
@@ -256,7 +281,8 @@ if(btnPosCheckout) {
         btnPosCheckout.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
         btnPosCheckout.disabled = true;
 
-        const tableNo = document.getElementById('pos-table-select').value;
+        const tableSelect = document.getElementById('pos-table-select');
+        const tableNo = tableSelect ? tableSelect.value : 'Parcel';
         const orderId = 'POS' + Date.now().toString().slice(-6);
 
         let subtotal = 0;
@@ -286,7 +312,7 @@ if(btnPosCheckout) {
             
             // STORE ORDER DATA FOR PRINTING & SHOW PRINT BUTTON
             lastPosOrderData = orderData;
-            btnPosPrint.classList.remove('hidden');
+            if (btnPosPrint) btnPosPrint.classList.remove('hidden');
 
             // CLEAR CART
             posCart = {};
@@ -353,77 +379,79 @@ if(btnPosPrint) {
 // ==========================================================================
 const tablesGrid = document.getElementById('tables-grid');
 
-onSnapshot(collection(db, "tables"), async (snapshot) => {
-    tablesGrid.innerHTML = '';
-    
-    const tables = [];
-    snapshot.forEach(d => tables.push({ id: d.id, ...d.data() }));
-    tables.sort((a, b) => Number(a.id) - Number(b.id));
-
-    for (let table of tables) {
-        if (table.waterRequest) {
-            waiterMsg.innerText = `Table ${table.id} requested Water!`;
-            waiterToast.classList.remove('hidden');
-            audioAlert.play().catch(e => {}); 
-            
-            setTimeout(() => {
-                updateDoc(doc(db, "tables", table.id), { waterRequest: false });
-                waiterToast.classList.add('hidden');
-            }, 8000);
-        }
-
-        let cardClass = 'free';
-        let actionHtml = `<p class="text-muted text-sm text-center">Scan QR to start</p>`;
-        let detailsHtml = `<p class="text-center text-muted mt-3">Empty</p>`;
+if (tablesGrid) {
+    onSnapshot(collection(db, "tables"), async (snapshot) => {
+        tablesGrid.innerHTML = '';
         
-        if (table.status === 'occupied') {
-            cardClass = 'occupied';
-            detailsHtml = `<p class="cust-name">Guests Seated</p><p class="text-sm text-muted">Browsing menu...</p>`;
-            
-            if (table.activeOrderId) {
-                const orderRef = doc(db, "orders", table.activeOrderId);
-                const orderSnap = await getDoc(orderRef);
+        const tables = [];
+        snapshot.forEach(d => tables.push({ id: d.id, ...d.data() }));
+        tables.sort((a, b) => Number(a.id) - Number(b.id));
+
+        for (let table of tables) {
+            if (table.waterRequest) {
+                if (waiterMsg) waiterMsg.innerText = `Table ${table.id} requested Water!`;
+                if (waiterToast) waiterToast.classList.remove('hidden');
+                audioAlert.play().catch(e => {}); 
                 
-                if (orderSnap.exists()) {
-                    const ordData = orderSnap.data();
+                setTimeout(() => {
+                    updateDoc(doc(db, "tables", table.id), { waterRequest: false });
+                    if (waiterToast) waiterToast.classList.add('hidden');
+                }, 8000);
+            }
+
+            let cardClass = 'free';
+            let actionHtml = `<p class="text-muted text-sm text-center">Scan QR to start</p>`;
+            let detailsHtml = `<p class="text-center text-muted mt-3">Empty</p>`;
+            
+            if (table.status === 'occupied') {
+                cardClass = 'occupied';
+                detailsHtml = `<p class="cust-name">Guests Seated</p><p class="text-sm text-muted">Browsing menu...</p>`;
+                
+                if (table.activeOrderId) {
+                    const orderRef = doc(db, "orders", table.activeOrderId);
+                    const orderSnap = await getDoc(orderRef);
                     
-                    if (ordData.paymentStatus === 'unpaid') {
-                        cardClass = 'pending'; 
-                        detailsHtml = `
-                            <p class="cust-name">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
-                            <p class="bill-amt">₹${ordData.totalAmount}</p>
-                            <span class="status-badge ${ordData.status === 'completed' ? 'paid' : 'preparing'}">${ordData.status.toUpperCase()}</span>
-                        `;
-                        actionHtml = `
-                            <button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')">
-                                <i class="fa-solid fa-print"></i> Print Bill
-                            </button>
-                            <button class="btn-success btn-sm w-100" onclick="approvePayment('${ordData.orderId}', '${table.id}')">
-                                <i class="fa-solid fa-check"></i> Mark Paid & Clear
-                            </button>
-                        `;
+                    if (orderSnap.exists()) {
+                        const ordData = orderSnap.data();
+                        
+                        if (ordData.paymentStatus === 'unpaid') {
+                            cardClass = 'pending'; 
+                            detailsHtml = `
+                                <p class="cust-name">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
+                                <p class="bill-amt">₹${ordData.totalAmount}</p>
+                                <span class="status-badge ${ordData.status === 'completed' ? 'paid' : 'preparing'}">${ordData.status.toUpperCase()}</span>
+                            `;
+                            actionHtml = `
+                                <button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')">
+                                    <i class="fa-solid fa-print"></i> Print Bill
+                                </button>
+                                <button class="btn-success btn-sm w-100" onclick="approvePayment('${ordData.orderId}', '${table.id}')">
+                                    <i class="fa-solid fa-check"></i> Mark Paid & Clear
+                                </button>
+                            `;
+                        }
                     }
                 }
             }
-        }
 
-        const card = document.createElement('div');
-        card.className = `table-card ${cardClass}`;
-        card.innerHTML = `
-            <div class="card-head d-flex-between">
-                <h3>Table ${table.id}</h3>
-                <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
-            </div>
-            <div class="card-body">
-                ${detailsHtml}
-            </div>
-            <div class="card-foot">
-                ${actionHtml}
-            </div>
-        `;
-        tablesGrid.appendChild(card);
-    }
-});
+            const card = document.createElement('div');
+            card.className = `table-card ${cardClass}`;
+            card.innerHTML = `
+                <div class="card-head d-flex-between">
+                    <h3>Table ${table.id}</h3>
+                    <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
+                </div>
+                <div class="card-body">
+                    ${detailsHtml}
+                </div>
+                <div class="card-foot">
+                    ${actionHtml}
+                </div>
+            `;
+            tablesGrid.appendChild(card);
+        }
+    });
+}
 
 window.approvePayment = async function(orderId, tableId) {
     if (confirm(`Approve payment for Order #${orderId} and free Table ${tableId}?`)) {
@@ -441,27 +469,4 @@ window.approvePayment = async function(orderId, tableId) {
 // DIRECT THERMAL PRINTING LOGIC FOR TABLES
 window.printOrderBill = async function(orderId) {
     const orderRef = doc(db, "orders", orderId);
-    const orderSnap = await getDoc(orderRef);
-    if (!orderSnap.exists()) return alert("Order not found!");
-    const data = orderSnap.data();
-
-    let itemsHtml = '';
-    data.items.forEach(i => {
-        itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
-    });
-
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    printWindow.document.write(`
-        <html>
-        <head><title>Bill - ${data.orderId}</title></head>
-        <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
-            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-                <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
-                <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
-                <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
-                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
-            </div>
-            <div style="border-bottom: 1px dashed #000;"></div>
-            <table style="width: 100%; font-size: 13px; margin: 10px 0; 
+ 
