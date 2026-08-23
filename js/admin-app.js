@@ -3,42 +3,8 @@
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { adminLogout } from "./auth.js";
-
-// ==========================================================================
-// 0. ADMIN LOGIN SECURITY (FIXED)
-// ==========================================================================
-const loginScreen = document.getElementById('admin-login-screen');
-const btnAdminLogin = document.getElementById('btn-admin-login');
-const inputAdminPass = document.getElementById('admin-passcode');
-const loginError = document.getElementById('admin-login-error');
-
-// Check if already authenticated in this session
-if (sessionStorage.getItem('adminAuthenticated') === 'true') {
-    if (loginScreen) {
-        loginScreen.classList.add('hidden');
-        loginScreen.style.display = 'none'; // DIRECT FIX: Force hide
-    }
-}
-
-if (btnAdminLogin) {
-    btnAdminLogin.addEventListener('click', () => {
-        // Master Passcode is set to 7860 (.trim() added for extra safety)
-        if (inputAdminPass.value.trim() === '7860') {
-            sessionStorage.setItem('adminAuthenticated', 'true');
-            if (loginScreen) {
-                loginScreen.classList.add('hidden');
-                loginScreen.style.display = 'none'; // DIRECT FIX: Force hide
-            }
-        } else {
-            if (loginError) {
-                loginError.classList.remove('hidden');
-                loginError.style.display = 'block'; // Show error properly
-            }
-        }
-    });
-}
 
 // DOM Elements - Sidebar Navigation
 const navItems = document.querySelectorAll('.nav-item');
@@ -63,8 +29,6 @@ navItems.forEach(item => {
         document.getElementById(targetId).classList.remove('hidden');
         
         sectionTitle.innerText = item.innerText;
-        
-        // Removed auto-load for reports here, as it's handled in reports-app.js now
     });
 });
 
@@ -72,7 +36,6 @@ const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', adminLogout);
 }
-
 
 // ==========================================================================
 // 2. CLOUDINARY UPLOAD & MENU MANAGEMENT
@@ -469,4 +432,26 @@ window.approvePayment = async function(orderId, tableId) {
 // DIRECT THERMAL PRINTING LOGIC FOR TABLES
 window.printOrderBill = async function(orderId) {
     const orderRef = doc(db, "orders", orderId);
- 
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) return alert("Order not found!");
+    const data = orderSnap.data();
+
+    let itemsHtml = '';
+    data.items.forEach(i => {
+        itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
+    });
+
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.write(`
+        <html>
+        <head><title>Bill - ${data.orderId}</title></head>
+        <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
+            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
+                <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
+                <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
+                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
+            </div>
+            <div style="border-bottom: 1px dashed #000;"><
