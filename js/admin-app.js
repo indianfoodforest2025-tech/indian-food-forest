@@ -3,7 +3,7 @@
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 console.log("✅ Admin JS File Loaded Successfully!");
 
@@ -35,6 +35,11 @@ navItems.forEach(item => {
         
         if (sectionTitle) {
             sectionTitle.innerText = item.innerText;
+        }
+
+        // Auto load reports if reports tab clicked
+        if (targetId === 'section-reports') {
+            loadReport();
         }
     });
 });
@@ -459,7 +464,4 @@ window.printOrderBill = async function(orderId) {
             </div>
             <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
                 <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
-                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
-            </div>
-            <div style="border-bottom: 1px dashed #000;"></div>
-            <table style="wid
+                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeSt
