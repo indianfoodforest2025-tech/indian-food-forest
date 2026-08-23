@@ -159,10 +159,35 @@
                             <span>Grand Total</span>
                             <strong id="pos-grand-total" style="font-size: 22px; color: var(--primary-blue);">₹0</strong>
                         </div>
-                        <button id="btn-pos-checkout" class="btn-success w-100 btn-large">
-                            <i class="fa-solid fa-paper-plane"></i> Send to Kitchen
-                        </button>
+                        <!-- BUTTONS: Send to Kitchen AND Print Bill -->
+                        <div style="display: flex; gap: 10px;">
+                            <button id="btn-pos-checkout" class="btn-success btn-large" style="flex: 1;">
+                                <i class="fa-solid fa-paper-plane"></i> Kitchen
+                            </button>
+                            <button id="btn-pos-print" class="btn-primary btn-large hidden" style="flex: 1;">
+                                <i class="fa-solid fa-print"></i> Print Bill
+                            </button>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- THERMAL BILL TEMPLATE FOR POS (HIDDEN ON SCREEN) -->
+            <div id="pos-print-receipt" style="display: none; font-family: monospace; padding: 20px; width: 300px; color: black; background: white;">
+                <div style="text-align: center; border-bottom: 1px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h2 style="margin: 0;">Indian Food Forest</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 12px;">POS Order / Parcel</p>
+                    <p id="pos-receipt-date" style="margin: 0; font-size: 12px;"></p>
+                </div>
+                <table style="width: 100%; text-align: left; font-size: 14px; border-bottom: 1px dashed black; margin-bottom: 10px;">
+                    <thead><tr><th>Item</th><th>Qty</th><th style="text-align: right;">Total</th></tr></thead>
+                    <tbody id="pos-receipt-items"></tbody>
+                </table>
+                <div style="text-align: right; font-size: 16px; font-weight: bold;">
+                    Grand Total: <span id="pos-receipt-total">₹0</span>
+                </div>
+                <div style="text-align: center; margin-top: 15px; font-size: 12px;">
+                    Thank you! Please visit again.
                 </div>
             </div>
         </section>
@@ -268,15 +293,6 @@
             <!-- Chart Container -->
             <div class="chart-container mt-4 bg-white rounded shadow-sm p-4">
                 <canvas id="salesChart" height="100"></canvas>
-            </div>
-
-            <!-- DANGER ZONE -->
-            <div class="mt-4 p-4 rounded text-center" style="border: 1px dashed var(--danger-red); background: #FEF2F2;">
-                <h4 class="text-danger mb-2"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
-                <p class="text-sm text-muted mb-3">This action will permanently delete all active orders and free up all tables. (Requires Master Passcode)</p>
-                <button id="btn-factory-reset" class="btn-danger btn-large">
-                    Wipe Database (End of Day Reset)
-                </button>
             </div>
         </section>
         
