@@ -1,5 +1,5 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Failsafe Version)
+// ADMIN DASHBOARD LOGIC (Complete & Failsafe Version)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
@@ -18,7 +18,7 @@ const waiterMsg = document.getElementById('waiter-alert-msg');
 const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
 // ==========================================================================
-// 1. SIDEBAR TAB NAVIGATION LOGIC (FIXED)
+// 1. SIDEBAR TAB NAVIGATION LOGIC
 // ==========================================================================
 navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -191,7 +191,7 @@ window.toggleStock = async function(id, status) {
 // 3. POS / MANUAL ENTRY SYSTEM & PRINT
 // ==========================================================================
 let posCart = {};
-let lastPosOrderData = null; // Store last POS order for printing
+let lastPosOrderData = null; 
 
 window.addToPosCart = function(id) {
     const item = globalMenuData.find(i => i.id === id);
@@ -461,4 +461,5 @@ window.printOrderBill = async function(orderId) {
                 <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
                 <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
             </div>
-            <div style="border-bottom: 1px dashed #000;"></d
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <table style="wid
