@@ -21,21 +21,21 @@
 <body class="admin-body">
 
     <!-- ============================================== -->
-    <!-- 0. ADMIN SECURE LOGIN OVERLAY (BULLETPROOF) -->
+    <!-- 0. ADMIN SECURE LOGIN OVERLAY (100% BULLETPROOF) -->
     <!-- ============================================== -->
-    <div id="admin-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 9999;">
-        <div class="modal-card text-center shadow-lg" style="max-width: 360px; margin: auto; padding: 30px;">
-            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+    <div id="admin-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 999999; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <div class="modal-card text-center shadow-lg" style="max-width: 360px; margin: 100px auto; padding: 30px; background: white; border-radius: 10px;">
+            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-leaf text-success fa-2x"></i>
             </div>
             <h2 class="mb-2">Admin Portal</h2>
             <p class="text-muted text-sm mb-4">Enter Master Passcode to access</p>
             
-            <!-- FORM WRAPPER (Taaki "Enter" key bhi kaam kare) -->
-            <form onsubmit="window.forceUnlockDashboard(); return false;">
+            <!-- FORM WRAPPER -->
+            <form onsubmit="handleAdminLogin(event)">
                 <input type="password" id="admin-passcode" class="mx-auto" placeholder="••••" style="font-size: 28px; text-align: center; letter-spacing: 12px; font-weight: bold; padding: 12px; width: 200px; display: block; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; margin-bottom: 15px;" autocomplete="off" maxlength="4">
                 
-                <p id="admin-login-error" class="text-danger text-sm hidden mt-2">Incorrect Passcode!</p>
+                <p id="admin-login-error" class="text-danger text-sm mt-2" style="display: none;">Incorrect Passcode!</p>
                 
                 <button type="submit" class="btn-primary btn-large w-100 mt-4">
                     <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
@@ -43,6 +43,30 @@
             </form>
         </div>
     </div>
+
+    <!-- DIRECT LOGIN SCRIPT (Ye load hote hi chalega) -->
+    <script>
+        // Check login state immediately
+        if (sessionStorage.getItem('adminAuthenticated') === 'true') {
+            document.getElementById('admin-login-screen').style.setProperty('display', 'none', 'important');
+        }
+
+        // Login Check Function
+        function handleAdminLogin(event) {
+            event.preventDefault(); // Page refresh hone se rokega
+            var passInput = document.getElementById('admin-passcode').value.trim();
+            var errorMsg = document.getElementById('admin-login-error');
+            var loginScreen = document.getElementById('admin-login-screen');
+
+            if (passInput === '7860') {
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                loginScreen.style.setProperty('display', 'none', 'important');
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+    <!-- ============================================== -->
 
     <!-- 1. SIDEBAR NAVIGATION -->
     <aside class="sidebar">
@@ -358,28 +382,4 @@
                         </div>
                     </div>
                     
-                    <div class="input-group">
-                        <label>Food Type</label>
-                        <select id="input-dish-type">
-                            <option value="veg">Vegetarian</option>
-                            <option value="non-veg">Non-Vegetarian</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Image Upload (Direct to Cloudinary)</label>
-                        <input type="file" id="input-dish-image" accept="image/*" class="file-input">
-                        <p class="help-text text-muted text-sm mt-1">Leave empty to keep existing/placeholder image.</p>
-                    </div>
-                    
-                    <button type="submit" id="btn-save-dish" class="btn-primary w-100 mt-3">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Files -->
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/admin
+                    <div class="input
