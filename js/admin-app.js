@@ -1,10 +1,11 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment, Reports & Expenses)
+// ADMIN DASHBOARD LOGIC (Failsafe Version)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
 import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { adminLogout } from "./auth.js";
+
+console.log("✅ Admin JS File Loaded Successfully!");
 
 // DOM Elements - Sidebar Navigation
 const navItems = document.querySelectorAll('.nav-item');
@@ -38,9 +39,13 @@ navItems.forEach(item => {
     });
 });
 
+// DIRECT LOGOUT LOGIC
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
-    btnLogout.addEventListener('click', adminLogout);
+    btnLogout.addEventListener('click', () => {
+        sessionStorage.removeItem('adminAuthenticated');
+        window.location.reload(); 
+    });
 }
 
 // ==========================================================================
@@ -186,7 +191,7 @@ window.toggleStock = async function(id, status) {
 // 3. POS / MANUAL ENTRY SYSTEM & PRINT
 // ==========================================================================
 let posCart = {};
-let lastPosOrderData = null; 
+let lastPosOrderData = null; // Store last POS order for printing
 
 window.addToPosCart = function(id) {
     const item = globalMenuData.find(i => i.id === id);
@@ -456,6 +461,4 @@ window.printOrderBill = async function(orderId) {
                 <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
                 <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
             </div>
-            <div style="border-bottom: 1px dashed #000;"></div>
-            <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
-                <tr><th s
+            <div style="border-bottom: 1px dashed #000;"></d
