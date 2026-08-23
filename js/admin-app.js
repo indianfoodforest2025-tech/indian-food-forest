@@ -1,39 +1,36 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Complete, Failsafe & Unified Version)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 console.log("✅ Admin JS File Loaded Successfully!");
 
-// ==========================================================================
-// 1. SIDEBAR TAB NAVIGATION & LOGOUT LOGIC
-// ==========================================================================
+// DOM Elements
 const navItems = document.querySelectorAll('.nav-item');
 const sections = document.querySelectorAll('.admin-section');
 const sectionTitle = document.getElementById('current-section-title');
+const waiterToast = document.getElementById('waiter-alert-toast');
+const waiterMsg = document.getElementById('waiter-alert-msg');
+const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
+// ==========================================================================
+// 1. SIDEBAR TAB NAVIGATION & LOGOUT
+// ==========================================================================
 navItems.forEach(item => {
     item.addEventListener('click', () => {
-        // Remove active class from all tabs & hide all sections
         navItems.forEach(nav => nav.classList.remove('active'));
         sections.forEach(sec => sec.classList.add('hidden'));
         
-        // Add active to clicked tab & show target section
         item.classList.add('active');
         const targetId = item.getAttribute('data-target');
         const targetSection = document.getElementById(targetId);
         
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-        }
-        
-        if (sectionTitle) {
-            sectionTitle.innerText = item.innerText;
-        }
+        if (targetSection) targetSection.classList.remove('hidden');
+        if (sectionTitle) sectionTitle.innerText = item.innerText;
 
-        // Auto-load reports if Reports tab is clicked
+        // Agar report tab click ho, toh reports-app.js ka function call karo
         if (targetId === 'section-reports' && typeof window.loadReport === 'function') {
             window.loadReport();
         }
@@ -113,12 +110,11 @@ if (dishUploadForm) {
             if (imageUrl) dishData.imageUrl = imageUrl;
 
             await setDoc(doc(db, "menu", dishId), dishData, { merge: true });
-            
             alert("Dish saved successfully!");
             if (modalAddDish) modalAddDish.classList.add('hidden');
         } catch (error) {
             console.error("Upload Error:", error);
-            alert("Error saving dish. Check console.");
+            alert("Error saving dish.");
         } finally {
             if (btnSaveDish) {
                 btnSaveDish.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish';
@@ -128,7 +124,6 @@ if (dishUploadForm) {
     });
 }
 
-// Real-time render Admin Menu List & POS Menu Grid
 let globalMenuData = [];
 onSnapshot(collection(db, "menu"), (snapshot) => {
     const tbody = document.getElementById('admin-menu-list');
@@ -181,7 +176,6 @@ window.toggleStock = async function(id, status) {
     await updateDoc(doc(db, "menu", id), { isAvailable: status });
 };
 
-
 // ==========================================================================
 // 3. POS / MANUAL ENTRY SYSTEM & PRINT
 // ==========================================================================
@@ -190,9 +184,7 @@ let lastPosOrderData = null;
 
 window.addToPosCart = function(id) {
     const item = globalMenuData.find(i => i.id === id);
-    if (!posCart[id]) {
-        posCart[id] = { ...item, qty: 0 };
-    }
+    if (!posCart[id]) posCart[id] = { ...item, qty: 0 };
     posCart[id].qty += 1;
     renderPosCart();
 };
@@ -212,8 +204,8 @@ function renderPosCart() {
 
     list.innerHTML = '';
     let total = 0;
-
     const cartKeys = Object.keys(posCart);
+
     if(cartKeys.length === 0) {
         list.innerHTML = '<p class="text-muted text-center mt-4">Cart is empty</p>';
         if (grandTotalEl) grandTotalEl.innerText = '₹0';
@@ -271,7 +263,7 @@ if(btnPosCheckout) {
             tax: 0,
             totalAmount: subtotal,
             status: 'pending',
-            paymentStatus: 'paid', 
+            paymentStatus: 'paid', // POS is paid instantly, will show in Report
             timestamp: new Date().toISOString()
         };
 
@@ -338,15 +330,10 @@ if(btnPosPrint) {
     });
 }
 
-
 // ==========================================================================
-// 4. LIVE FLOOR GRID & PRINT BILL
+// 4. LIVE FLOOR GRID
 // ==========================================================================
 const tablesGrid = document.getElementById('tables-grid');
-const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-const waiterToast = document.getElementById('waiter-alert-toast');
-const waiterMsg = document.getElementById('waiter-alert-msg');
-
 if (tablesGrid) {
     onSnapshot(collection(db, "tables"), async (snapshot) => {
         tablesGrid.innerHTML = '';
@@ -380,6 +367,7 @@ if (tablesGrid) {
                     
                     if (orderSnap.exists()) {
                         const ordData = orderSnap.data();
+                        
                         if (ordData.paymentStatus === 'unpaid') {
                             cardClass = 'pending'; 
                             detailsHtml = `
@@ -514,101 +502,4 @@ if (btnGenerateQrs) {
 
 if (btnPrintQrs) {
     btnPrintQrs.addEventListener('click', () => window.print());
-}
-
-// ==========================================================================
-// 6. REPORTS & EXPENSE MANAGER
-// ==========================================================================
-const fetchBtn = document.getElementById('btn-fetch-report');
-const datePicker = document.getElementById('report-date-picker');
-const btnAddExpense = document.getElementById('btn-add-expense');
-
-if (datePicker) datePicker.value = new Date().toISOString().split('T')[0];
-if (fetchBtn) fetchBtn.addEventListener('click', loadReport);
-
-window.loadReport = async function() {
-    const dateInput = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-    if(!dateInput) return;
-    if(fetchBtn) fetchBtn.innerHTML = "Loading...";
-    
-    try {
-        const orderSnapshot = await getDocs(collection(db, "orders"));
-        let totalRev = 0, totalOrd = 0, itemCounts = {};
-
-        orderSnapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            if(data.timestamp && data.timestamp.startsWith(dateInput)) {
-                totalOrd++;
-                if(data.paymentStatus === 'paid') totalRev += Number(data.totalAmount || 0);
-                if (data.items) {
-                    data.items.forEach(item => { itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty; });
-                }
-            }
-        });
-
-        let topItemName = "--", maxQty = 0;
-        for (const [name, qty] of Object.entries(itemCounts)) {
-            if (qty > maxQty) { maxQty = qty; topItemName = `${name} (${qty})`; }
-        }
-
-        const expSnapshot = await getDocs(collection(db, "expenses"));
-        let totalExp = 0, expHtml = '';
-
-        expSnapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            if(data.date === dateInput) {
-                totalExp += Number(data.amount);
-                expHtml += `
-                    <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
-                        <span>${data.desc}</span>
-                        <strong class="text-danger">₹${data.amount}</strong>
-                    </div>`;
-            }
-        });
-
-        const netProfit = totalRev - totalExp;
-        const elRev = document.getElementById('stat-revenue');
-        const elExp = document.getElementById('stat-expense');
-        const elProf = document.getElementById('stat-profit');
-        const elOrd = document.getElementById('stat-orders');
-        const elTop = document.getElementById('stat-top-item');
-        const elExpContainer = document.getElementById('expense-list-container');
-
-        if(elRev) elRev.innerText = `₹${totalRev}`;
-        if(elExp) elExp.innerText = `₹${totalExp}`;
-        if(elProf) elProf.innerText = `₹${netProfit}`;
-        if(elOrd) elOrd.innerText = totalOrd;
-        if(elTop) elTop.innerText = topItemName;
-        if(elExpContainer) elExpContainer.innerHTML = expHtml || '<p class="text-center mt-3">No expenses recorded for this date.</p>';
-
-    } catch(err) { console.error("Error fetching report: ", err); }
-    if(fetchBtn) fetchBtn.innerHTML = "Load";
-};
-
-if (btnAddExpense) {
-    btnAddExpense.addEventListener('click', async () => {
-        const descInput = document.getElementById('expense-desc').value;
-        const amountInput = document.getElementById('expense-amount').value;
-        const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-
-        if(!descInput || !amountInput) return alert("Please enter both Expense Details and Amount!");
-
-        btnAddExpense.innerText = "Adding...";
-        btnAddExpense.disabled = true;
-
-        try {
-            await addDoc(collection(db, "expenses"), {
-                date: selectedDate, desc: descInput, amount: Number(amountInput), timestamp: new Date().toISOString()
-            });
-            document.getElementById('expense-desc').value = '';
-            document.getElementById('expense-amount').value = '';
-            await window.loadReport();
-        } catch (error) {
-            console.error("Error adding expense: ", error);
-            alert("Failed to add expense.");
-        } finally {
-            btnAddExpense.innerText = "Add";
-            btnAddExpense.disabled = false;
-        }
-    });
 }
