@@ -1,9 +1,9 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment, Reports & Expenses)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { adminLogout } from "./auth.js";
 
 // ==========================================================================
@@ -54,6 +54,11 @@ navItems.forEach(item => {
         document.getElementById(targetId).classList.remove('hidden');
         
         sectionTitle.innerText = item.innerText;
+        
+        // Auto-load reports if Reports tab is clicked
+        if (targetId === 'section-reports') {
+            loadReport();
+        }
     });
 });
 
@@ -459,6 +464,4 @@ window.printOrderBill = async function(orderId) {
                 <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
             </div>
             <div style="border-bottom: 1px dashed #000;"></div>
-            <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
-                <tr><th style="text-align:left; padding-bottom:5px;">Item</th><th>Qty</th><th style="text-align:right;">Amt</th></tr>
-           
+            <table style="width: 100%; font-size: 13px; margin: 10px 0; 
