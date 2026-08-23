@@ -36,7 +36,8 @@
             
             <p id="admin-login-error" class="text-danger text-sm hidden mt-2">Incorrect Passcode!</p>
             
-            <button id="btn-admin-login" class="btn-primary btn-large w-100 mt-4">
+            <!-- ADDED ONCLICK EVENT HERE -->
+            <button id="btn-admin-login" class="btn-primary btn-large w-100 mt-4" onclick="unlockDashboard()">
                 <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
             </button>
         </div>
@@ -265,7 +266,7 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Stats Cards (UPDATED FOR PROFIT & EXPENSE) -->
             <div class="stats-grid mt-3">
                 <div class="stat-card">
                     <div class="stat-icon bg-blue"><i class="fa-solid fa-indian-rupee-sign"></i></div>
@@ -275,17 +276,24 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon bg-green"><i class="fa-solid fa-receipt"></i></div>
+                    <div class="stat-icon" style="background:#FEE2E2; color:#EF4444;"><i class="fa-solid fa-arrow-trend-down"></i></div>
                     <div class="stat-details">
-                        <p>Total Orders</p>
-                        <h3 id="stat-orders">0</h3>
+                        <p>Total Expense</p>
+                        <h3 id="stat-expense">₹0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="stat-details">
+                        <p>Net Profit</p>
+                        <h3 id="stat-profit">₹0</h3>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-orange"><i class="fa-solid fa-fire"></i></div>
                     <div class="stat-details">
-                        <p>Top Item</p>
-                        <h3 id="stat-top-item">--</h3>
+                        <p>Total Orders</p>
+                        <h3 id="stat-orders">0</h3>
                     </div>
                 </div>
             </div>
@@ -374,7 +382,4 @@
     <!-- JavaScript Files -->
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/admin-app.js"></script>
-    <script type="module" src="js/reports-app.js"></script>
-
-</body>
-</html>
+    <script type="module" src="js/reports-app.js"></scrip
