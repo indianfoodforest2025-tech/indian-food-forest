@@ -382,4 +382,31 @@
                         </div>
                     </div>
                     
-                    <div class="input
+                    <div class="input-group">
+                        <label>Food Type</label>
+                        <select id="input-dish-type">
+                            <option value="veg">Vegetarian</option>
+                            <option value="non-veg">Non-Vegetarian</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Image Upload (Direct to Cloudinary)</label>
+                        <input type="file" id="input-dish-image" accept="image/*" class="file-input">
+                        <p class="help-text text-muted text-sm mt-1">Leave empty to keep existing/placeholder image.</p>
+                    </div>
+                    
+                    <button type="submit" id="btn-save-dish" class="btn-primary w-100 mt-3">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/admin-app.js"></script>
+
+</body>
+</html>
