@@ -1,5 +1,5 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment, Reset)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, QR Gen, Payment)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
@@ -184,9 +184,10 @@ window.toggleStock = async function(id, status) {
 
 
 // ==========================================================================
-// 3. POS / MANUAL ENTRY SYSTEM
+// 3. POS / MANUAL ENTRY SYSTEM & PRINT
 // ==========================================================================
 let posCart = {};
+let lastPosOrderData = null; // Store last POS order for printing
 
 window.addToPosCart = function(id) {
     const item = globalMenuData.find(i => i.id === id);
@@ -241,6 +242,8 @@ function renderPosCart() {
 }
 
 const btnPosCheckout = document.getElementById('btn-pos-checkout');
+const btnPosPrint = document.getElementById('btn-pos-print'); // NEW PRINT BUTTON
+
 if(btnPosCheckout) {
     btnPosCheckout.addEventListener('click', async () => {
         if(Object.keys(posCart).length === 0) return alert("Cart is empty!");
@@ -275,15 +278,67 @@ if(btnPosCheckout) {
         try {
             await setDoc(doc(db, "orders", orderId), orderData);
             alert("Order sent to Kitchen!");
+            
+            // STORE ORDER DATA FOR PRINTING & SHOW PRINT BUTTON
+            lastPosOrderData = orderData;
+            btnPosPrint.classList.remove('hidden');
+
+            // CLEAR CART
             posCart = {};
             renderPosCart();
         } catch (error) {
             console.error("Order Failed: ", error);
             alert("Order failed!");
         } finally {
-            btnPosCheckout.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send to Kitchen';
+            btnPosCheckout.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kitchen';
             btnPosCheckout.disabled = false;
         }
+    });
+}
+
+// LOGIC FOR MANUAL POS PRINT BUTTON
+if(btnPosPrint) {
+    btnPosPrint.addEventListener('click', () => {
+        if(!lastPosOrderData) return alert("No recent order to print!");
+
+        let itemsHtml = '';
+        lastPosOrderData.items.forEach(i => {
+            itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
+        });
+
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        printWindow.document.write(`
+            <html>
+            <head><title>POS Bill - ${lastPosOrderData.orderId}</title></head>
+            <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
+                <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
+                    <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
+                    <div>Date: ${new Date(lastPosOrderData.timestamp).toLocaleDateString()}<br>Table: ${lastPosOrderData.tableNo}</div>
+                    <div style="text-align:right;">Time: ${new Date(lastPosOrderData.timestamp).toLocaleTimeString()}<br>Order: ${lastPosOrderData.orderId}</div>
+                </div>
+                <div style="border-bottom: 1px dashed #000;"></div>
+                <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
+                    <tr><th style="text-align:left; padding-bottom:5px;">Item</th><th>Qty</th><th style="text-align:right;">Amt</th></tr>
+                    ${itemsHtml}
+                </table>
+                <div style="border-bottom: 1px dashed #000;"></div>
+                <div style="display:flex; justify-content:space-between; font-size: 16px; font-weight:bold; margin-top:10px;">
+                    <span>GRAND TOTAL</span>
+                    <span>₹${lastPosOrderData.totalAmount}</span>
+                </div>
+                <p style="text-align:center; font-size:11px; margin-top:20px;">Thank You! Visit Again.</p>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+        
+        // Hide print button after printing
+        btnPosPrint.classList.add('hidden');
     });
 }
 
@@ -378,7 +433,7 @@ window.approvePayment = async function(orderId, tableId) {
     }
 };
 
-// DIRECT THERMAL PRINTING LOGIC
+// DIRECT THERMAL PRINTING LOGIC FOR TABLES
 window.printOrderBill = async function(orderId) {
     const orderRef = doc(db, "orders", orderId);
     const orderSnap = await getDoc(orderRef);
@@ -406,98 +461,4 @@ window.printOrderBill = async function(orderId) {
             <div style="border-bottom: 1px dashed #000;"></div>
             <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
                 <tr><th style="text-align:left; padding-bottom:5px;">Item</th><th>Qty</th><th style="text-align:right;">Amt</th></tr>
-                ${itemsHtml}
-            </table>
-            <div style="border-bottom: 1px dashed #000;"></div>
-            <div style="display:flex; justify-content:space-between; font-size: 16px; font-weight:bold; margin-top:10px;">
-                <span>GRAND TOTAL</span>
-                <span>₹${data.totalAmount}</span>
-            </div>
-            <p style="text-align:center; font-size:11px; margin-top:20px;">Thank You! Visit Again.</p>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
-};
-
-
-// ==========================================================================
-// 5. BULK SECURE QR GENERATOR
-// ==========================================================================
-document.getElementById('btn-generate-qrs').addEventListener('click', async () => {
-    const count = Number(document.getElementById('qr-table-count').value);
-    const qrGrid = document.getElementById('qr-display-grid');
-    const actionsBox = document.getElementById('qr-actions-box');
-    
-    qrGrid.innerHTML = ''; 
-    const baseUrl = "https://order.indianfoodforest.com/";
-
-    for (let i = 1; i <= count; i++) {
-        const secretToken = Math.random().toString(36).substring(2, 10);
-        const tableId = i.toString();
-
-        await setDoc(doc(db, "tables", tableId), {
-            status: 'free',
-            secret: secretToken,
-            activeOrderId: null,
-            waterRequest: false
-        }, { merge: true });
-
-        const scanUrl = `${baseUrl}index.html?table=${tableId}&secret=${secretToken}`;
-
-        const card = document.createElement('div');
-        card.className = 'qr-card';
-        card.innerHTML = `<h4>Table ${tableId}</h4><div id="qr-box-${tableId}" class="mt-2 mx-auto" style="width: 128px;"></div><p class="text-sm text-muted mt-2">Indian Food Forest</p>`;
-        qrGrid.appendChild(card);
-
-        new QRCode(document.getElementById(`qr-box-${tableId}`), {
-            text: scanUrl,
-            width: 128, height: 128,
-            colorDark : "#0F172A", colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    }
-
-    actionsBox.classList.remove('hidden');
-    alert(`${count} Secure QR Codes generated with custom domain and saved!`);
-});
-
-document.getElementById('btn-print-qrs').addEventListener('click', () => {
-    window.print();
-});
-
-
-// ==========================================================================
-// 6. MASTER DATABASE RESET (END OF DAY WIPE)
-// ==========================================================================
-const btnFactoryReset = document.getElementById('btn-factory-reset');
-if (btnFactoryReset) {
-    btnFactoryReset.addEventListener('click', async () => {
-        // Master Passcode is set to 7860
-        const pass = prompt("Enter Master Passcode to Wipe Data:");
-        if (pass === "7860") {
-            if (confirm("WARNING: This will clear all active tables. Do you want to continue?")) {
-                try {
-                    const tablesSnap = await getDocs(collection(db, "tables"));
-                    tablesSnap.forEach(tableDoc => {
-                        const newToken = Math.random().toString(36).substring(2, 10);
-                        updateDoc(doc(db, "tables", tableDoc.id), { 
-                            status: 'free', 
-                            activeOrderId: null,
-                            secret: newToken
-                        });
-                    });
-                    alert("System Reset Complete! All tables are free.");
-                    window.location.reload();
-                } catch (err) {
-                    alert("Error resetting database.");
-                    console.error(err);
-                }
-            }
-        } else if (pass !== null) {
-            alert("Incorrect Passcode!");
-        }
-    });
-}
+           
