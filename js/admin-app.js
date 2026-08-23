@@ -1,30 +1,26 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Complete & Failsafe Version)
+// ADMIN DASHBOARD LOGIC (Complete, Failsafe & Unified Version)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 console.log("✅ Admin JS File Loaded Successfully!");
 
-// DOM Elements - Sidebar Navigation
+// ==========================================================================
+// 1. SIDEBAR TAB NAVIGATION & LOGOUT LOGIC
+// ==========================================================================
 const navItems = document.querySelectorAll('.nav-item');
 const sections = document.querySelectorAll('.admin-section');
 const sectionTitle = document.getElementById('current-section-title');
 
-// DOM Elements - Toast & Alerts
-const waiterToast = document.getElementById('waiter-alert-toast');
-const waiterMsg = document.getElementById('waiter-alert-msg');
-const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-
-// ==========================================================================
-// 1. SIDEBAR TAB NAVIGATION LOGIC
-// ==========================================================================
 navItems.forEach(item => {
     item.addEventListener('click', () => {
+        // Remove active class from all tabs & hide all sections
         navItems.forEach(nav => nav.classList.remove('active'));
         sections.forEach(sec => sec.classList.add('hidden'));
         
+        // Add active to clicked tab & show target section
         item.classList.add('active');
         const targetId = item.getAttribute('data-target');
         const targetSection = document.getElementById(targetId);
@@ -37,14 +33,13 @@ navItems.forEach(item => {
             sectionTitle.innerText = item.innerText;
         }
 
-        // Auto load reports if reports tab clicked
-        if (targetId === 'section-reports') {
-            loadReport();
+        // Auto-load reports if Reports tab is clicked
+        if (targetId === 'section-reports' && typeof window.loadReport === 'function') {
+            window.loadReport();
         }
     });
 });
 
-// DIRECT LOGOUT LOGIC
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
@@ -102,10 +97,7 @@ if (dishUploadForm) {
                 formData.append('file', imageFile);
                 formData.append('upload_preset', UPLOAD_PRESET);
 
-                const cloudRes = await fetch(CLOUDINARY_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+                const cloudRes = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
                 const cloudData = await cloudRes.json();
                 imageUrl = cloudData.secure_url; 
             }
@@ -151,7 +143,6 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
         item.id = docSnap.id;
         globalMenuData.push(item);
 
-        // 1. Admin Menu Manager Row
         if (tbody) {
             const tr = document.createElement('tr');
             const img = item.imageUrl ? `<img src="${item.imageUrl}" class="dish-thumb">` : '<i class="fa-solid fa-image text-muted"></i>';
@@ -170,7 +161,6 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
             tbody.appendChild(tr);
         }
 
-        // 2. Admin POS Menu Card
         if(item.isAvailable && posGrid) {
             const posCard = document.createElement('div');
             posCard.className = 'table-card d-flex-between';
@@ -304,7 +294,6 @@ if(btnPosCheckout) {
     });
 }
 
-// LOGIC FOR MANUAL POS PRINT BUTTON
 if(btnPosPrint) {
     btnPosPrint.addEventListener('click', () => {
         if(!lastPosOrderData) return alert("No recent order to print!");
@@ -354,11 +343,13 @@ if(btnPosPrint) {
 // 4. LIVE FLOOR GRID & PRINT BILL
 // ==========================================================================
 const tablesGrid = document.getElementById('tables-grid');
+const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+const waiterToast = document.getElementById('waiter-alert-toast');
+const waiterMsg = document.getElementById('waiter-alert-msg');
 
 if (tablesGrid) {
     onSnapshot(collection(db, "tables"), async (snapshot) => {
         tablesGrid.innerHTML = '';
-        
         const tables = [];
         snapshot.forEach(d => tables.push({ id: d.id, ...d.data() }));
         tables.sort((a, b) => Number(a.id) - Number(b.id));
@@ -389,7 +380,6 @@ if (tablesGrid) {
                     
                     if (orderSnap.exists()) {
                         const ordData = orderSnap.data();
-                        
                         if (ordData.paymentStatus === 'unpaid') {
                             cardClass = 'pending'; 
                             detailsHtml = `
@@ -432,40 +422,12 @@ if (tablesGrid) {
 window.approvePayment = async function(orderId, tableId) {
     if (confirm(`Approve payment for Order #${orderId} and free Table ${tableId}?`)) {
         await updateDoc(doc(db, "orders", orderId), { paymentStatus: 'paid' });
-        
         const newToken = Math.random().toString(36).substring(2, 10);
-        await updateDoc(doc(db, "tables", tableId), { 
-            status: 'free',
-            activeOrderId: null,
-            secret: newToken 
-        });
+        await updateDoc(doc(db, "tables", tableId), { status: 'free', activeOrderId: null, secret: newToken });
     }
 };
 
 window.printOrderBill = async function(orderId) {
-    const orderRef = doc(db, "orders", orderId);
-    const orderSnap = await getDoc(orderRef);
-    if (!orderSnap.exists()) return alert("Order not found!");
-    const data = orderSnap.data();
-
-    let itemsHtml = '';
-    data.items.forEach(i => {
-        itemsHtml += `<tr><td style="padding:4px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">₹${i.qty * i.price}</td></tr>`;
-    });
-
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    printWindow.document.write(`
-        <html>
-        <head><title>Bill - ${data.orderId}</title></head>
-        <body style="font-family: monospace; padding: 20px; width: 80mm; margin: 0 auto; color: black; background: white;">
-            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-                <h2 style="margin: 0; font-size: 18px;">Indian Food Forest</h2>
-                <p style="margin: 5px 0; font-size: 12px; line-height:1.2;">Shop no 50, Digha, Thane<br>Phone: 8286468504<br>FSSAI: 21526068003444</p>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:10px;">
-                <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
-                <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeSt
-                                                       window.printOrderBill = async function(orderId) {
     const orderRef = doc(db, "orders", orderId);
     const orderSnap = await getDoc(orderRef);
     if (!orderSnap.exists()) return alert("Order not found!");
@@ -508,3 +470,145 @@ window.printOrderBill = async function(orderId) {
     setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
 };
 
+// ==========================================================================
+// 5. BULK SECURE QR GENERATOR
+// ==========================================================================
+const btnGenerateQrs = document.getElementById('btn-generate-qrs');
+const btnPrintQrs = document.getElementById('btn-print-qrs');
+
+if (btnGenerateQrs) {
+    btnGenerateQrs.addEventListener('click', async () => {
+        const countInput = document.getElementById('qr-table-count');
+        const count = countInput ? Number(countInput.value) : 15;
+        const qrGrid = document.getElementById('qr-display-grid');
+        const actionsBox = document.getElementById('qr-actions-box');
+        
+        if (qrGrid) qrGrid.innerHTML = ''; 
+        const baseUrl = "https://order.indianfoodforest.com/";
+
+        for (let i = 1; i <= count; i++) {
+            const secretToken = Math.random().toString(36).substring(2, 10);
+            const tableId = i.toString();
+
+            await setDoc(doc(db, "tables", tableId), {
+                status: 'free', secret: secretToken, activeOrderId: null, waterRequest: false
+            }, { merge: true });
+
+            const scanUrl = `${baseUrl}index.html?table=${tableId}&secret=${secretToken}`;
+
+            if (qrGrid) {
+                const card = document.createElement('div');
+                card.className = 'qr-card';
+                card.innerHTML = `<h4>Table ${tableId}</h4><div id="qr-box-${tableId}" class="mt-2 mx-auto" style="width: 128px;"></div><p class="text-sm text-muted mt-2">Indian Food Forest</p>`;
+                qrGrid.appendChild(card);
+
+                new QRCode(document.getElementById(`qr-box-${tableId}`), {
+                    text: scanUrl, width: 128, height: 128, colorDark : "#0F172A", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        }
+        if (actionsBox) actionsBox.classList.remove('hidden');
+        alert(`${count} Secure QR Codes generated with custom domain and saved!`);
+    });
+}
+
+if (btnPrintQrs) {
+    btnPrintQrs.addEventListener('click', () => window.print());
+}
+
+// ==========================================================================
+// 6. REPORTS & EXPENSE MANAGER
+// ==========================================================================
+const fetchBtn = document.getElementById('btn-fetch-report');
+const datePicker = document.getElementById('report-date-picker');
+const btnAddExpense = document.getElementById('btn-add-expense');
+
+if (datePicker) datePicker.value = new Date().toISOString().split('T')[0];
+if (fetchBtn) fetchBtn.addEventListener('click', loadReport);
+
+window.loadReport = async function() {
+    const dateInput = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+    if(!dateInput) return;
+    if(fetchBtn) fetchBtn.innerHTML = "Loading...";
+    
+    try {
+        const orderSnapshot = await getDocs(collection(db, "orders"));
+        let totalRev = 0, totalOrd = 0, itemCounts = {};
+
+        orderSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if(data.timestamp && data.timestamp.startsWith(dateInput)) {
+                totalOrd++;
+                if(data.paymentStatus === 'paid') totalRev += Number(data.totalAmount || 0);
+                if (data.items) {
+                    data.items.forEach(item => { itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty; });
+                }
+            }
+        });
+
+        let topItemName = "--", maxQty = 0;
+        for (const [name, qty] of Object.entries(itemCounts)) {
+            if (qty > maxQty) { maxQty = qty; topItemName = `${name} (${qty})`; }
+        }
+
+        const expSnapshot = await getDocs(collection(db, "expenses"));
+        let totalExp = 0, expHtml = '';
+
+        expSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if(data.date === dateInput) {
+                totalExp += Number(data.amount);
+                expHtml += `
+                    <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                        <span>${data.desc}</span>
+                        <strong class="text-danger">₹${data.amount}</strong>
+                    </div>`;
+            }
+        });
+
+        const netProfit = totalRev - totalExp;
+        const elRev = document.getElementById('stat-revenue');
+        const elExp = document.getElementById('stat-expense');
+        const elProf = document.getElementById('stat-profit');
+        const elOrd = document.getElementById('stat-orders');
+        const elTop = document.getElementById('stat-top-item');
+        const elExpContainer = document.getElementById('expense-list-container');
+
+        if(elRev) elRev.innerText = `₹${totalRev}`;
+        if(elExp) elExp.innerText = `₹${totalExp}`;
+        if(elProf) elProf.innerText = `₹${netProfit}`;
+        if(elOrd) elOrd.innerText = totalOrd;
+        if(elTop) elTop.innerText = topItemName;
+        if(elExpContainer) elExpContainer.innerHTML = expHtml || '<p class="text-center mt-3">No expenses recorded for this date.</p>';
+
+    } catch(err) { console.error("Error fetching report: ", err); }
+    if(fetchBtn) fetchBtn.innerHTML = "Load";
+};
+
+if (btnAddExpense) {
+    btnAddExpense.addEventListener('click', async () => {
+        const descInput = document.getElementById('expense-desc').value;
+        const amountInput = document.getElementById('expense-amount').value;
+        const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+
+        if(!descInput || !amountInput) return alert("Please enter both Expense Details and Amount!");
+
+        btnAddExpense.innerText = "Adding...";
+        btnAddExpense.disabled = true;
+
+        try {
+            await addDoc(collection(db, "expenses"), {
+                date: selectedDate, desc: descInput, amount: Number(amountInput), timestamp: new Date().toISOString()
+            });
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+            await window.loadReport();
+        } catch (error) {
+            console.error("Error adding expense: ", error);
+            alert("Failed to add expense.");
+        } finally {
+            btnAddExpense.innerText = "Add";
+            btnAddExpense.disabled = false;
+        }
+    });
+}
