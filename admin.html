@@ -44,16 +44,14 @@
         </div>
     </div>
 
-    <!-- DIRECT LOGIN SCRIPT (Ye load hote hi chalega) -->
+    <!-- DIRECT LOGIN SCRIPT -->
     <script>
-        // Check login state immediately
         if (sessionStorage.getItem('adminAuthenticated') === 'true') {
             document.getElementById('admin-login-screen').style.setProperty('display', 'none', 'important');
         }
 
-        // Login Check Function
         function handleAdminLogin(event) {
-            event.preventDefault(); // Page refresh hone se rokega
+            event.preventDefault(); 
             var passInput = document.getElementById('admin-passcode').value.trim();
             var errorMsg = document.getElementById('admin-login-error');
             var loginScreen = document.getElementById('admin-login-screen');
@@ -324,27 +322,26 @@
             </div>
 
             <!-- ================= NEW DAILY EXPENSE LOG UI ================= -->
-            <div class="mt-4 p-4 rounded bg-white shadow-sm border">
-                <h4><i class="fa-solid fa-money-bill-transfer text-danger"></i> Daily Expense Log</h4>
-                <p class="text-sm text-muted mb-3">Record daily expenses like vegetables, staff salary, maintenance, etc. for your records.</p>
+            <div class="mt-4 p-4 rounded bg-white shadow-sm border" style="max-width: 800px;">
+                <h4 style="border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">
+                    <i class="fa-solid fa-money-bill-transfer text-danger"></i> Daily Expense Log
+                </h4>
+                <p class="text-sm text-muted mb-3">Record daily expenses like vegetables, staff salary, maintenance, etc.</p>
                 
-                <div class="input-group-inline mt-3" style="display: flex; gap: 10px;">
-                    <input type="text" id="expense-desc" placeholder="Expense Details (E.g., Sabzi, Salary...)" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    <input type="number" id="expense-amount" placeholder="Amount (₹)" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="expense-desc" placeholder="Expense Details (E.g., Sabzi, Salary...)" style="flex: 2; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none;">
+                    <input type="number" id="expense-amount" placeholder="Amount (₹)" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none;">
                     <button id="btn-add-expense" class="btn-danger" style="padding: 10px 20px; border-radius: 5px;">Add</button>
                 </div>
                 
                 <h5 class="mt-4 mb-2">Expenses for Selected Date</h5>
-                <div id="expense-list-container" class="text-sm text-muted" style="max-height: 200px; overflow-y: auto; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <div id="expense-list-container" class="text-sm text-muted" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 5px; padding: 10px; background: #f8fafc;">
                     <!-- JS Injected Expenses Will Appear Here -->
+                    <p class="text-center mt-2">No expenses recorded yet.</p>
                 </div>
             </div>
             <!-- ============================================================= -->
 
-            <!-- Chart Container -->
-            <div class="chart-container mt-4 bg-white rounded shadow-sm p-4">
-                <canvas id="salesChart" height="100"></canvas>
-            </div>
         </section>
         
     </main>
@@ -404,9 +401,10 @@
         </div>
     </div>
 
-    <!-- JavaScript Files -->
+    <!-- JavaScript Files (Dono files add kar di hain yahan) -->
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/admin-app.js"></script>
+    <script type="module" src="js/reports-app.js"></script>
 
 </body>
 </html>
