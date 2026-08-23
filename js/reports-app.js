@@ -1,9 +1,9 @@
 // ==========================================================================
-// SALES REPORTS & ANALYTICS LOGIC (Chart.js, CSV Export & Expenses)
+// SALES REPORTS & ANALYTICS LOGIC (Safe Version)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // DOM Elements
 const datePicker = document.getElementById('report-date-picker');
@@ -30,45 +30,50 @@ if (datePicker) {
 }
 
 window.loadReport = async function() {
-    // Event object clash rokne ke liye
     const targetDate = datePicker ? datePicker.value : today;
     if (!targetDate) return;
 
     try {
         if (btnFetch) btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         
-        const qOrders = query(collection(db, "orders"), where("paymentStatus", "==", "paid"));
-        const orderSnapshot = await getDocs(qOrders);
-        
+        // PURANA SAFE TARIKA: Pehle sab data lao, fir code me filter karo
+        const orderSnapshot = await getDocs(collection(db, "orders"));
         const allPaidOrders = [];
-        orderSnapshot.forEach(doc => allPaidOrders.push({ id: doc.id, ...doc.data() }));
+        
+        orderSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.paymentStatus === 'paid') {
+                allPaidOrders.push({ id: docSnap.id, ...data });
+            }
+        });
 
-        // SAFE FILTER: Sirf wahi orders lega jinme timestamp proper format me hai
+        // Date ke hisaab se filter
         currentReportData = allPaidOrders.filter(order => {
             return order.timestamp && typeof order.timestamp === 'string' && order.timestamp.startsWith(targetDate);
         });
 
-        const qExpenses = query(collection(db, "expenses"), where("date", "==", targetDate));
-        const expSnapshot = await getDocs(qExpenses);
-        
+        // Expenses ko bhi aise hi safe tarike se laayenge
+        const expSnapshot = await getDocs(collection(db, "expenses"));
         let totalExpense = 0;
         let expenseHtml = '';
         
         expSnapshot.forEach(docSnap => {
             const data = docSnap.data();
-            totalExpense += Number(data.amount || 0);
-            expenseHtml += `
-                <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0;">
-                    <span>${data.desc}</span>
-                    <strong class="text-danger">₹${data.amount}</strong>
-                </div>`;
+            if (data.date === targetDate) {
+                totalExpense += Number(data.amount || 0);
+                expenseHtml += `
+                    <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0;">
+                        <span>${data.desc}</span>
+                        <strong class="text-danger">₹${data.amount}</strong>
+                    </div>`;
+            }
         });
 
         calculateStats(currentReportData, totalExpense, expenseHtml);
 
     } catch (error) {
         console.error("Error loading reports: ", error);
-        alert("Report Error: " + error.message); // Exact error screen par dikhayega
+        alert("Report Error: " + error.message); 
     } finally {
         if (btnFetch) btnFetch.innerHTML = 'Load';
     }
@@ -221,8 +226,9 @@ if (btnExportCSV) {
     });
 }
 
-if (btnFetch) {
-    btnFetch.addEventListener('click', () => window.loadReport());
+const btnFetchLocal = document.getElementById('btn-fetch-report');
+if (btnFetchLocal) {
+    btnFetchLocal.addEventListener('click', () => window.loadReport());
 }
 
 setTimeout(() => {
