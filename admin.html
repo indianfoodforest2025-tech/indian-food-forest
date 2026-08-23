@@ -290,6 +290,24 @@
                 </div>
             </div>
 
+            <!-- ================= NEW DAILY EXPENSE LOG UI ================= -->
+            <div class="mt-4 p-4 rounded bg-white shadow-sm border">
+                <h4><i class="fa-solid fa-money-bill-transfer text-danger"></i> Daily Expense Log</h4>
+                <p class="text-sm text-muted mb-3">Record daily expenses like vegetables, staff salary, maintenance, etc. for your records.</p>
+                
+                <div class="input-group-inline mt-3" style="display: flex; gap: 10px;">
+                    <input type="text" id="expense-desc" placeholder="Expense Details (E.g., Sabzi, Salary...)" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <input type="number" id="expense-amount" placeholder="Amount (₹)" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <button id="btn-add-expense" class="btn-danger" style="padding: 10px 20px; border-radius: 5px;">Add</button>
+                </div>
+                
+                <h5 class="mt-4 mb-2">Expenses for Selected Date</h5>
+                <div id="expense-list-container" class="text-sm text-muted" style="max-height: 200px; overflow-y: auto; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <!-- JS Injected Expenses Will Appear Here -->
+                </div>
+            </div>
+            <!-- ============================================================= -->
+
             <!-- Chart Container -->
             <div class="chart-container mt-4 bg-white rounded shadow-sm p-4">
                 <canvas id="salesChart" height="100"></canvas>
