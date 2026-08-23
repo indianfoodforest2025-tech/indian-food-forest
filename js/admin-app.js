@@ -17,7 +17,7 @@ const waiterMsg = document.getElementById('waiter-alert-msg');
 const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
 // ==========================================================================
-// 1. SIDEBAR TAB NAVIGATION LOGIC
+// 1. SIDEBAR TAB NAVIGATION LOGIC (FIXED)
 // ==========================================================================
 navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -26,9 +26,15 @@ navItems.forEach(item => {
         
         item.classList.add('active');
         const targetId = item.getAttribute('data-target');
-        document.getElementById(targetId).classList.remove('hidden');
+        const targetSection = document.getElementById(targetId);
         
-        sectionTitle.innerText = item.innerText;
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+        }
+        
+        if (sectionTitle) {
+            sectionTitle.innerText = item.innerText;
+        }
     });
 });
 
@@ -180,7 +186,7 @@ window.toggleStock = async function(id, status) {
 // 3. POS / MANUAL ENTRY SYSTEM & PRINT
 // ==========================================================================
 let posCart = {};
-let lastPosOrderData = null; // Store last POS order for printing
+let lastPosOrderData = null; 
 
 window.addToPosCart = function(id) {
     const item = globalMenuData.find(i => i.id === id);
@@ -235,7 +241,7 @@ function renderPosCart() {
 }
 
 const btnPosCheckout = document.getElementById('btn-pos-checkout');
-const btnPosPrint = document.getElementById('btn-pos-print'); // NEW PRINT BUTTON
+const btnPosPrint = document.getElementById('btn-pos-print'); 
 
 if(btnPosCheckout) {
     btnPosCheckout.addEventListener('click', async () => {
@@ -265,7 +271,7 @@ if(btnPosCheckout) {
             tax: 0,
             totalAmount: subtotal,
             status: 'pending',
-            paymentStatus: 'paid', // POS orders are usually pre-paid at counter
+            paymentStatus: 'paid', 
             timestamp: new Date().toISOString()
         };
 
@@ -273,11 +279,9 @@ if(btnPosCheckout) {
             await setDoc(doc(db, "orders", orderId), orderData);
             alert("Order sent to Kitchen!");
             
-            // STORE ORDER DATA FOR PRINTING & SHOW PRINT BUTTON
             lastPosOrderData = orderData;
             if (btnPosPrint) btnPosPrint.classList.remove('hidden');
 
-            // CLEAR CART
             posCart = {};
             renderPosCart();
         } catch (error) {
@@ -331,7 +335,6 @@ if(btnPosPrint) {
         printWindow.focus();
         setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
         
-        // Hide print button after printing
         btnPosPrint.classList.add('hidden');
     });
 }
@@ -429,7 +432,6 @@ window.approvePayment = async function(orderId, tableId) {
     }
 };
 
-// DIRECT THERMAL PRINTING LOGIC FOR TABLES
 window.printOrderBill = async function(orderId) {
     const orderRef = doc(db, "orders", orderId);
     const orderSnap = await getDoc(orderRef);
@@ -454,4 +456,6 @@ window.printOrderBill = async function(orderId) {
                 <div>Date: ${new Date(data.timestamp).toLocaleDateString()}<br>Table: ${data.tableNo}</div>
                 <div style="text-align:right;">Time: ${new Date(data.timestamp).toLocaleTimeString()}<br>Order: ${data.orderId}</div>
             </div>
-            <div style="border-bottom: 1px dashed #000;"><
+            <div style="border-bottom: 1px dashed #000;"></div>
+            <table style="width: 100%; font-size: 13px; margin: 10px 0; border-collapse: collapse;">
+                <tr><th s
