@@ -37,7 +37,7 @@ navItems.forEach(item => {
 });
 
 // ==========================================================================
-// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT (FULL 170+ SEED DATA W/ CORRECT CATEGORIES)
+// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT (WITH EDIT SUPPORT)
 // ==========================================================================
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/z2hgv1bk/image/upload';
 const UPLOAD_PRESET = 'indian_food_preset'; 
@@ -61,77 +61,6 @@ if (btnCloseDishModal) {
         if (modalAddDish) modalAddDish.classList.add('hidden');
     });
 }
-
-// Complete 170+ Menu Items Seed with Correct Category Mapping
-const fullMenuSeed = [
-    // SOUPS
-    { id: "manchow-soup-veg", name: "Manchow Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
-    { id: "hot-sour-soup-veg", name: "Hot And Sour Soup (Veg)", category: "soups", price: 140, type: "veg", isAvailable: true },
-    { id: "clear-soup-veg", name: "Clear Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
-    { id: "mushroom-soup-veg", name: "Cream A Mushroom Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
-    { id: "lemon-coriander-soup", name: "Lemon Coriander Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
-    { id: "chicken-manchow-soup", name: "Chicken Manchow Soup", category: "soups", price: 160, type: "non-veg", isAvailable: true },
-    { id: "chicken-hot-sour", name: "Chicken Hot & Sour Soup", category: "soups", price: 180, type: "non-veg", isAvailable: true },
-    { id: "chicken-clear-soup", name: "Chicken Clear Soup", category: "soups", price: 190, type: "non-veg", isAvailable: true },
-    { id: "chicken-lung-fung", name: "Chicken Lung Fung Soup", category: "soups", price: 290, type: "non-veg", isAvailable: true },
-
-    // STARTERS
-    { id: "chana-garlic-fry", name: "Chana Garlic Fry", category: "starters", price: 160, type: "veg", isAvailable: true },
-    { id: "chana-koliwada", name: "Chana Koliwada", category: "starters", price: 150, type: "veg", isAvailable: true },
-    { id: "chana-garlic-koliwada", name: "Chana Garlic Koliwada", category: "starters", price: 160, type: "veg", isAvailable: true },
-    { id: "chinese-bhel", name: "Chinese Bhel", category: "starters", price: 150, type: "veg", isAvailable: true },
-    { id: "manchurian-dry", name: "Manchurian (Dry)", category: "starters", price: 150, type: "veg", isAvailable: true },
-    { id: "veg-crispy", name: "Veg Crispy", category: "starters", price: 240, type: "veg", isAvailable: true },
-    { id: "paneer-chilly", name: "Paneer Chilly", category: "starters", price: 200, type: "veg", isAvailable: true },
-    { id: "paneer-crispy", name: "Paneer Crispy", category: "starters", price: 210, type: "veg", isAvailable: true },
-    { id: "paneer-65", name: "Paneer 65", category: "starters", price: 230, type: "veg", isAvailable: true },
-    { id: "mushroom-chilly", name: "Mushroom Chilly", category: "starters", price: 230, type: "veg", isAvailable: true },
-    { id: "chicken-lollipop", name: "Chicken Lollipop", category: "starters", price: 220, type: "non-veg", isAvailable: true },
-    { id: "chicken-crispy", name: "Chicken Crispy", category: "starters", price: 230, type: "non-veg", isAvailable: true },
-    { id: "chicken-chilly-dry", name: "Chicken Chilly (Dry)", category: "starters", price: 220, type: "non-veg", isAvailable: true },
-    { id: "chicken-65", name: "Chicken 65", category: "starters", price: 220, type: "non-veg", isAvailable: true },
-    { id: "egg-chilly", name: "Egg Chilly", category: "starters", price: 180, type: "non-veg", isAvailable: true },
-    { id: "paneer-tikka", name: "Paneer Tikka", category: "starters", price: 240, type: "veg", isAvailable: true },
-    { id: "chicken-tandoori", name: "Chicken Tandoori", category: "starters", price: 460, type: "non-veg", isAvailable: true },
-    { id: "chicken-tikka", name: "Chicken Tikka", category: "starters", price: 260, type: "non-veg", isAvailable: true },
-
-    // MAIN COURSE
-    { id: "dal-fry", name: "Dal Fry", category: "main-course", price: 110, type: "veg", isAvailable: true },
-    { id: "dal-tadka", name: "Dal Tadka", category: "main-course", price: 130, type: "veg", isAvailable: true },
-    { id: "veg-kolhapuri", name: "Veg Kolhapuri", category: "main-course", price: 215, type: "veg", isAvailable: true },
-    { id: "paneer-masala", name: "Paneer Masala", category: "main-course", price: 230, type: "veg", isAvailable: true },
-    { id: "paneer-butter-masala", name: "Paneer Butter Masala", category: "main-course", price: 410, type: "veg", isAvailable: true },
-    { id: "kaju-masala", name: "Kaju Masala", category: "main-course", price: 260, type: "veg", isAvailable: true },
-    { id: "chicken-masala", name: "Chicken Masala", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
-    { id: "butter-chicken", name: "Butter Chicken", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
-    { id: "chicken-handi", name: "Chicken Handi", category: "main-course", price: 410, type: "non-veg", isAvailable: true },
-    { id: "mutton-masala", name: "Mutton Masala", category: "main-course", price: 320, type: "non-veg", isAvailable: true },
-    { id: "surmai-tawa-fry", name: "Surmai Tawa Fry", category: "main-course", price: 260, type: "non-veg", isAvailable: true },
-    { id: "prawns-masala", name: "Prawns Masala", category: "main-course", price: 240, type: "non-veg", isAvailable: true },
-
-    // NOODLES & RICE (Beverages Category tab in UI)
-    { id: "veg-hakka-noodles", name: "Veg Hakka Noodles", category: "beverages", price: 150, type: "veg", isAvailable: true },
-    { id: "veg-schezwan-noodles", name: "Veg Schezwan Noodles", category: "beverages", price: 160, type: "veg", isAvailable: true },
-    { id: "veg-triple-noodles-half", name: "Veg Triple Noodles (Half)", category: "beverages", price: 150, type: "veg", isAvailable: true },
-    { id: "veg-triple-noodles-full", name: "Veg Triple Noodles (Full)", category: "beverages", price: 210, type: "veg", isAvailable: true },
-    { id: "chicken-hakka-noodles", name: "Chicken Hakka Noodles", category: "beverages", price: 180, type: "non-veg", isAvailable: true },
-    { id: "chicken-triple-noodles-half", name: "Chicken Triple Noodles (Half)", category: "beverages", price: 160, type: "non-veg", isAvailable: true },
-    { id: "chicken-triple-noodles-full", name: "Chicken Triple Noodles (Full)", category: "beverages", price: 230, type: "non-veg", isAvailable: true },
-    { id: "veg-fried-rice", name: "Veg Fried Rice", category: "beverages", price: 150, type: "veg", isAvailable: true },
-    { id: "veg-schezwan-rice", name: "Veg Schezwan Rice", category: "beverages", price: 160, type: "veg", isAvailable: true },
-    { id: "chicken-fried-rice", name: "Chi. Fried Rice", category: "beverages", price: 170, type: "non-veg", isAvailable: true },
-    { id: "chicken-schezwan-rice", name: "Chi. Schezwan Rice", category: "beverages", price: 170, type: "non-veg", isAvailable: true },
-    { id: "chicken-1000-rice", name: "Chicken 1000 Rice", category: "beverages", price: 280, type: "non-veg", isAvailable: true },
-    { id: "chicken-biryani-full", name: "Chicken Biryani", category: "beverages", price: 160, type: "non-veg", isAvailable: true },
-
-    // THALI SPECIALS (Desserts Category tab in UI)
-    { id: "veg-thali", name: "Veg Thali", category: "desserts", price: 120, type: "veg", isAvailable: true },
-    { id: "chicken-thali", name: "Chicken Thali", category: "desserts", price: 180, type: "non-veg", isAvailable: true },
-    { id: "egg-thali", name: "Egg Thali", category: "desserts", price: 180, type: "non-veg", isAvailable: true },
-    { id: "mutton-thali", name: "Mutton Thali", category: "desserts", price: 330, type: "non-veg", isAvailable: true },
-    { id: "surmai-thali", name: "Surmai Thali", category: "desserts", price: 320, type: "non-veg", isAvailable: true },
-    { id: "pomfret-thali", name: "Pomfret Thali", category: "desserts", price: 380, type: "non-veg", isAvailable: true }
-];
 
 if (dishUploadForm) {
     dishUploadForm.addEventListener('submit', async (e) => {
@@ -190,69 +119,56 @@ if (dishUploadForm) {
 }
 
 let globalMenuData = [];
-async function initMenuSync() {
-    const menuCollection = collection(db, "menu");
-    const snapshot = await getDocs(menuCollection);
+onSnapshot(collection(db, "menu"), (snapshot) => {
+    const tbody = document.getElementById('admin-menu-list');
+    const posGrid = document.getElementById('pos-menu-grid');
     
-    // Auto-seed or overwrite misconfigured categories once
-    if (snapshot.empty || snapshot.docs.length < 50) {
-        for (const item of fullMenuSeed) {
-            await setDoc(doc(db, "menu", item.id), item, { merge: true });
+    if (tbody) tbody.innerHTML = '';
+    if (posGrid) posGrid.innerHTML = '';
+    globalMenuData = [];
+    
+    snapshot.forEach(docSnap => {
+        const item = docSnap.data();
+        item.id = docSnap.id;
+        globalMenuData.push(item);
+
+        if (tbody) {
+            const tr = document.createElement('tr');
+            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : '<span style="font-size:11px; color:#64748B;">No Img</span>';
+            const stockBtn = item.isAvailable 
+                ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Out</button>`
+                : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">In</button>`;
+
+            const editBtn = `<button class="btn-sm btn-outline-primary" onclick="editDish('${item.id}')" style="margin-right: 5px;"><i class="fa-solid fa-pen"></i></button>`;
+
+            tr.innerHTML = `
+                <td>${img}</td>
+                <td><strong style="color: #0F172A;">${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}"><i class="fa-solid fa-circle"></i> ${item.type.toUpperCase()}</small></td>
+                <td>${(item.category || '').toUpperCase()}</td>
+                <td style="font-weight: 600;">₹${item.price}</td>
+                <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'ACTIVE' : 'OUT'}</span></td>
+                <td>${editBtn} ${stockBtn}</td>
+            `;
+            tbody.appendChild(tr);
         }
-    }
 
-    onSnapshot(menuCollection, (snap) => {
-        const tbody = document.getElementById('admin-menu-list');
-        const posGrid = document.getElementById('pos-menu-grid');
-        
-        if (tbody) tbody.innerHTML = '';
-        if (posGrid) posGrid.innerHTML = '';
-        globalMenuData = [];
-        
-        snap.forEach(docSnap => {
-            const item = docSnap.data();
-            item.id = docSnap.id;
-            globalMenuData.push(item);
-
-            if (tbody) {
-                const tr = document.createElement('tr');
-                const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : '<span style="font-size:11px; color:#64748B;">No Img</span>';
-                const stockBtn = item.isAvailable 
-                    ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Out</button>`
-                    : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">In</button>`;
-
-                const editBtn = `<button class="btn-sm btn-outline-primary" onclick="editDish('${item.id}')" style="margin-right: 5px;"><i class="fa-solid fa-pen"></i></button>`;
-
-                tr.innerHTML = `
-                    <td>${img}</td>
-                    <td><strong style="color: #0F172A;">${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}"><i class="fa-solid fa-circle"></i> ${item.type.toUpperCase()}</small></td>
-                    <td>${item.category.toUpperCase()}</td>
-                    <td style="font-weight: 600;">₹${item.price}</td>
-                    <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'ACTIVE' : 'OUT'}</span></td>
-                    <td>${editBtn} ${stockBtn}</td>
-                `;
-                tbody.appendChild(tr);
-            }
-
-            if(item.isAvailable && posGrid) {
-                const posCard = document.createElement('div');
-                posCard.className = 'table-card d-flex-between';
-                posCard.style.padding = '10px 12px';
-                posCard.style.border = '1px solid #E2E8F0';
-                posCard.style.boxShadow = 'none';
-                posCard.innerHTML = `
-                    <div>
-                        <strong style="font-size: 13px; color: #0F172A;">${item.name}</strong>
-                        <div class="text-muted" style="font-size: 12px; font-weight: 600;">₹${item.price}</div>
-                    </div>
-                    <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px; padding: 4px 10px;">Add +</button>
-                `;
-                posGrid.appendChild(posCard);
-            }
-        });
+        if(item.isAvailable && posGrid) {
+            const posCard = document.createElement('div');
+            posCard.className = 'table-card d-flex-between';
+            posCard.style.padding = '10px 12px';
+            posCard.style.border = '1px solid #E2E8F0';
+            posCard.style.boxShadow = 'none';
+            posCard.innerHTML = `
+                <div>
+                    <strong style="font-size: 13px; color: #0F172A;">${item.name}</strong>
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">₹${item.price}</div>
+                </div>
+                <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px; padding: 4px 10px;">Add +</button>
+            `;
+            posGrid.appendChild(posCard);
+        }
     });
-}
-initMenuSync();
+});
 
 window.toggleStock = async function(id, status) {
     await updateDoc(doc(db, "menu", id), { isAvailable: status });
