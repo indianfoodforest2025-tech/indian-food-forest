@@ -133,7 +133,7 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
 
         if (tbody) {
             const tr = document.createElement('tr');
-            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : '<i class="fa-solid fa-image text-muted fa-2x"></i>';
+            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;">` : '<i class="fa-solid fa-image text-muted fa-2x"></i>';
             const stockBtn = item.isAvailable 
                 ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Mark Out of Stock</button>`
                 : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">Mark In Stock</button>`;
@@ -152,15 +152,15 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
         if(item.isAvailable && posGrid) {
             const posCard = document.createElement('div');
             posCard.className = 'table-card d-flex-between';
-            posCard.style.padding = '12px 15px';
+            posCard.style.padding = '10px 12px';
             posCard.style.border = '1px solid #E2E8F0';
             posCard.style.boxShadow = 'none';
             posCard.innerHTML = `
                 <div>
-                    <strong style="font-size: 14px; color: #0F172A;">${item.name}</strong>
-                    <div class="text-muted" style="font-size: 13px; font-weight: 600;">₹${item.price}</div>
+                    <strong style="font-size: 13px; color: #0F172A;">${item.name}</strong>
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">₹${item.price}</div>
                 </div>
-                <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px;">Add +</button>
+                <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px; padding: 4px 10px;">Add +</button>
             `;
             posGrid.appendChild(posCard);
         }
@@ -202,7 +202,7 @@ function renderPosCart() {
     const cartKeys = Object.keys(posCart);
 
     if(cartKeys.length === 0) {
-        list.innerHTML = '<p class="text-muted text-center mt-4"><i class="fa-solid fa-basket-shopping fa-2x mb-2" style="opacity: 0.5;"></i><br>Cart is empty</p>';
+        list.innerHTML = '<p class="text-muted text-center mt-3" style="font-size: 13px;"><i class="fa-solid fa-basket-shopping fa-2x mb-1" style="opacity: 0.5;"></i><br>Cart is empty</p>';
         if (grandTotalEl) grandTotalEl.innerText = '₹0';
         return;
     }
@@ -211,15 +211,15 @@ function renderPosCart() {
         const item = posCart[id];
         total += item.price * item.qty;
         list.innerHTML += `
-            <div class="d-flex-between" style="border-bottom:1px solid #F1F5F9; padding:12px 0;">
+            <div class="d-flex-between" style="border-bottom:1px solid #F1F5F9; padding:10px 0;">
                 <div>
-                    <div style="font-size:14px; font-weight:600; color: #0F172A;">${item.name}</div>
-                    <div style="font-size:13px; color:#64748B;">₹${item.price}</div>
+                    <div style="font-size:13px; font-weight:600; color: #0F172A;">${item.name}</div>
+                    <div style="font-size:12px; color:#64748B;">₹${item.price}</div>
                 </div>
                 <div class="input-group-inline" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 2px;">
-                    <button style="border:none; background:transparent; padding: 4px 10px; font-weight:bold; color: #0F172A;" onclick="updatePosCart('${id}', -1)">-</button>
-                    <span style="width:20px; text-align:center; font-size: 14px; font-weight:600;">${item.qty}</span>
-                    <button style="border:none; background:transparent; padding: 4px 10px; font-weight:bold; color: #0F172A;" onclick="updatePosCart('${id}', 1)">+</button>
+                    <button style="border:none; background:transparent; padding: 2px 8px; font-weight:bold; color: #0F172A;" onclick="updatePosCart('${id}', -1)">-</button>
+                    <span style="width:20px; text-align:center; font-size: 13px; font-weight:600;">${item.qty}</span>
+                    <button style="border:none; background:transparent; padding: 2px 8px; font-weight:bold; color: #0F172A;" onclick="updatePosCart('${id}', 1)">+</button>
                 </div>
             </div>
         `;
@@ -247,7 +247,6 @@ if(btnPosCheckout) {
             return { id: i.id, name: i.name, qty: i.qty, price: i.price };
         });
 
-        // 🔥 FIX: paymentStatus 'paid' but status 'pending' ensures KDS gets it and Report counts it.
         const orderData = {
             orderId: orderId,
             tableNo: tableNo,
@@ -266,7 +265,6 @@ if(btnPosCheckout) {
         try {
             await setDoc(doc(db, "orders", orderId), orderData);
             
-            // 🔥 KITCHEN SYNC FIX: If table is selected, occupy it so it shows on Live Grid!
             if (tableNo !== 'Parcel') {
                 await updateDoc(doc(db, "tables", tableNo.toString()), {
                     status: 'occupied',
@@ -292,7 +290,7 @@ if(btnPosCheckout) {
 }
 
 // ==========================================================================
-// 4. LIVE FLOOR GRID (Shows all active orders properly)
+// 4. LIVE FLOOR GRID
 // ==========================================================================
 const tablesGrid = document.getElementById('tables-grid');
 if (tablesGrid) {
@@ -316,7 +314,7 @@ if (tablesGrid) {
 
             let cardClass = 'free';
             let actionHtml = `<p class="text-muted text-sm text-center">Scan QR to start</p>`;
-            let detailsHtml = `<p class="text-center text-muted mt-3">Empty</p>`;
+            let detailsHtml = `<p class="text-center text-muted mt-2">Empty</p>`;
             
             if (table.status === 'occupied') {
                 cardClass = 'occupied';
@@ -328,21 +326,18 @@ if (tablesGrid) {
                     
                     if (orderSnap.exists()) {
                         const ordData = orderSnap.data();
-                        
-                        // FIX: Show card logic based on both Unpaid and Paid (POS)
                         cardClass = ordData.paymentStatus === 'unpaid' ? 'pending' : 'occupied'; 
                         
                         detailsHtml = `
-                            <p class="cust-name" style="color: #0F172A;">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
-                            <p class="bill-amt" style="font-size: 22px; color: #2563EB;">₹${ordData.totalAmount}</p>
+                            <p class="cust-name" style="color: #0F172A; font-size: 14px;">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
+                            <p class="bill-amt" style="font-size: 20px; color: #2563EB;">₹${ordData.totalAmount}</p>
                             
-                            <div style="display:flex; gap:5px; margin-top:10px;">
+                            <div style="display:flex; gap:5px; margin-top:8px;">
                                 <span class="status-badge ${ordData.status === 'completed' ? 'paid' : 'preparing'}">${ordData.status.toUpperCase()}</span>
                                 <span class="status-badge ${ordData.paymentStatus === 'paid' ? 'paid' : 'pending'}">${ordData.paymentStatus.toUpperCase()}</span>
                             </div>
                         `;
 
-                        // Action Buttons based on Payment Status
                         let actionButtons = `
                             <button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')" style="border-radius: 6px;">
                                 <i class="fa-solid fa-print"></i> Print Bill
@@ -356,7 +351,6 @@ if (tablesGrid) {
                                 </button>
                             `;
                         } else {
-                            // Paid via POS, just needs clearing
                             actionButtons += `
                                 <button class="btn-secondary btn-sm w-100" onclick="clearTable('${table.id}')" style="border-radius: 6px;">
                                     <i class="fa-solid fa-broom"></i> Clear Table
@@ -372,13 +366,13 @@ if (tablesGrid) {
             card.className = `table-card ${cardClass}`;
             card.innerHTML = `
                 <div class="card-head d-flex-between">
-                    <h3 style="color: #0F172A;">Table ${table.id}</h3>
+                    <h3 style="color: #0F172A; font-size: 16px;">Table ${table.id}</h3>
                     <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="margin: 10px 0;">
                     ${detailsHtml}
                 </div>
-                <div class="card-foot" style="border-top: 1px dashed #E2E8F0; padding-top: 15px; margin-top: 10px;">
+                <div class="card-foot" style="border-top: 1px dashed #E2E8F0; padding-top: 10px; margin-top: 5px;">
                     ${actionHtml}
                 </div>
             `;
@@ -387,7 +381,6 @@ if (tablesGrid) {
     });
 }
 
-// Payment Approval
 window.approvePayment = async function(orderId, tableId) {
     if (confirm(`Approve payment for Order #${orderId} and clear Table ${tableId}?`)) {
         await updateDoc(doc(db, "orders", orderId), { paymentStatus: 'paid' });
@@ -395,7 +388,6 @@ window.approvePayment = async function(orderId, tableId) {
     }
 };
 
-// Clear Table (If already paid via POS)
 window.clearTable = async function(tableId) {
     if (confirm(`Clear Table ${tableId}?`)) {
         await updateDoc(doc(db, "tables", tableId), { status: 'free', activeOrderId: null });
@@ -403,7 +395,7 @@ window.clearTable = async function(tableId) {
 };
 
 // ==========================================================================
-// 5. THE 80MM THERMAL PRINT ENGINE (For Both POS & Live Grid)
+// 5. 80MM THERMAL PRINT ENGINE
 // ==========================================================================
 function generate80mmPrintWindow(data) {
     let itemsHtml = '';
@@ -429,15 +421,7 @@ function generate80mmPrintWindow(data) {
             <title>Bill - ${data.orderId}</title>
             <style>
                 @page { margin: 0; size: 80mm auto; }
-                body { 
-                    font-family: 'Courier New', Courier, monospace; 
-                    width: 76mm; /* Keeps margin safe */
-                    margin: 0 auto; 
-                    padding: 5mm 2mm; 
-                    color: black; 
-                    background: white; 
-                    font-size: 12px;
-                }
+                body { font-family: 'Courier New', Courier, monospace; width: 76mm; margin: 0 auto; padding: 5mm 2mm; color: black; background: white; font-size: 12px; }
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
                 .bold { font-weight: bold; }
@@ -453,9 +437,7 @@ function generate80mmPrintWindow(data) {
                 <p style="margin: 0;">Mob: 8286468504</p>
                 <p style="margin: 3px 0;">FSSAI: 21526068003444</p>
             </div>
-            
             <div class="dashed-line"></div>
-            
             <div style="display:flex; justify-content:space-between;">
                 <div>Dt: ${new Date(data.timestamp).toLocaleDateString()}</div>
                 <div>Tm: ${new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
@@ -464,31 +446,18 @@ function generate80mmPrintWindow(data) {
                 <div>Tbl: <span class="bold">${data.tableNo}</span></div>
                 <div>Ord: ${data.orderId.slice(-5)}</div>
             </div>
-
             <div class="dashed-line"></div>
-
             <table>
                 <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th class="text-center">Qty</th>
-                        <th class="text-right">Amt</th>
-                    </tr>
+                    <tr><th>Item</th><th class="text-center">Qty</th><th class="text-right">Amt</th></tr>
                 </thead>
-                <tbody>
-                    ${itemsHtml}
-                </tbody>
+                <tbody>${itemsHtml}</tbody>
             </table>
-
             <div class="dashed-line"></div>
-
             <div style="display:flex; justify-content:space-between; font-size: 14px;" class="bold">
-                <span>TOTAL</span>
-                <span>Rs. ${data.totalAmount}</span>
+                <span>TOTAL</span><span>Rs. ${data.totalAmount}</span>
             </div>
-
             <div class="dashed-line"></div>
-            
             <div class="text-center" style="margin-top: 15px; font-size: 11px;">
                 <p style="margin: 0;">Thank You! Visit Again.</p>
                 <p style="margin: 4px 0;">Powered by IFF Tech</p>
@@ -499,15 +468,9 @@ function generate80mmPrintWindow(data) {
 
     printWindow.document.close();
     printWindow.focus();
-    
-    // Slight delay to ensure content renders before print dialog
-    setTimeout(() => { 
-        printWindow.print(); 
-        printWindow.close(); 
-    }, 800);
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 800);
 }
 
-// Print trigger for POS Checkout
 if(btnPosPrint) {
     btnPosPrint.addEventListener('click', () => {
         if(!lastPosOrderData) return;
@@ -516,7 +479,6 @@ if(btnPosPrint) {
     });
 }
 
-// Print trigger for Live Grid Cards
 window.printOrderBill = async function(orderId) {
     try {
         const orderSnap = await getDoc(doc(db, "orders", orderId));
@@ -529,7 +491,7 @@ window.printOrderBill = async function(orderId) {
 };
 
 // ==========================================================================
-// 6. PERMANENT & SINGLE QR GENERATOR 
+// 6. QR GENERATOR
 // ==========================================================================
 const btnGenerateQrs = document.getElementById('btn-generate-qrs');
 const btnGenerateSingle = document.getElementById('btn-generate-single');
@@ -546,7 +508,6 @@ async function generateQRCodes(tableList) {
         const tableSnap = await getDoc(tableRef);
         let secretToken;
 
-        // Ensure token is permanent
         if (tableSnap.exists() && tableSnap.data().secret) {
             secretToken = tableSnap.data().secret;
         } else {
@@ -560,12 +521,12 @@ async function generateQRCodes(tableList) {
 
         if (qrGrid) {
             const card = document.createElement('div');
-            card.style = "border: 1px solid #CBD5E1; border-radius: 12px; padding: 20px; text-align: center;";
-            card.innerHTML = `<h4 style="color: #0F172A; margin-bottom: 15px;">Table ${tableId}</h4><div id="qr-box-${tableId}" class="mx-auto" style="width: 128px;"></div><p class="text-sm text-muted mt-3" style="font-weight: 500;">Indian Food Forest</p>`;
+            card.style = "border: 1px solid #CBD5E1; border-radius: 10px; padding: 15px; text-align: center; background: white;";
+            card.innerHTML = `<h4 style="color: #0F172A; margin-bottom: 10px; font-size: 14px;">Table ${tableId}</h4><div id="qr-box-${tableId}" class="mx-auto" style="width: 110px;"></div><p class="text-sm text-muted mt-2" style="font-size: 11px;">Indian Food Forest</p>`;
             qrGrid.appendChild(card);
 
             new QRCode(document.getElementById(`qr-box-${tableId}`), {
-                text: scanUrl, width: 128, height: 128, colorDark : "#0F172A", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+                text: scanUrl, width: 110, height: 110, colorDark : "#0F172A", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
         }
     }
