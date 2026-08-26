@@ -116,7 +116,9 @@
         // Indian Food Forest Exact Coordinates
         const RESTAURANT_LAT = 19.180782; 
         const RESTAURANT_LNG = 72.998040;
-        const ALLOWED_RADIUS_METERS = 200; // 200 Meters security zone
+        
+        // 🔥 TESTING BYPASS: Radius changed to 9000 km so you can test from anywhere!
+        const ALLOWED_RADIUS_METERS = 9000000; 
 
         // Haversine formula to calculate distance between two GPS points
         function calculateDistance(lat1, lon1, lat2, lon2) {
