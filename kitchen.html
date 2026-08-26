@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kitchen Display | Indian Food Forest</title>
     
+    <!-- Maintenance Mode Bypass Guard -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('bypass') === 'true') {
+            localStorage.setItem('dev_bypass', 'true');
+        }
+        const isMasterBypass = localStorage.getItem('dev_bypass') === 'true';
+        const isMaintenanceOn = true; // Set to false when you want to make it public
+
+        if (isMaintenanceOn && !isMasterBypass) {
+            window.location.href = "maintenance.html";
+        }
+    </script>
+    
     <!-- Premium Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
