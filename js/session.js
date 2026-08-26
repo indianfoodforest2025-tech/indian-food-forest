@@ -1,50 +1,56 @@
 // ==========================================================================
-// SESSION SECURITY & LANDING PAGE LOGIC
+// SESSION SECURITY, GEOFENCING TRIGGER & LANDING PAGE LOGIC
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { saveSession, getSession, saveCustomerDetails } from "./auth.js";
+import { saveSession, getSession, saveCustomerDetails, clearSession } from "./auth.js";
 
-// DOM Elements
+// DOM Elements (Only present on index.html)
 const loaderScreen = document.getElementById('session-loader');
 const errorScreen = document.getElementById('security-error-screen');
 const welcomeScreen = document.getElementById('welcome-screen');
 const marketingModal = document.getElementById('marketing-modal');
 
-// Parse URL Parameters (e.g., ?table=5&secret=abc123xyz)
+// Parse URL Parameters
 const urlParams = new URLSearchParams(window.location.search);
 const urlTable = urlParams.get('table');
 const urlSecret = urlParams.get('secret');
 
-/**
- * On Page Load: Verify URL and Security Token
- */
-window.addEventListener('DOMContentLoaded', async () => {
-    // If we are on index.html, run the security check
-    if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html')) {
-        
-        // 1. Check if URL has valid params
-        if (urlTable && urlSecret) {
-            await verifyTableSecret(urlTable, urlSecret);
-        } 
-        // 2. Check if a valid session already exists in LocalStorage
-        else if (getSession()) {
-            const currentSession = getSession();
-            // Verify if the local session is still valid in database
-            await verifyTableSecret(currentSession.tableNo, currentSession.secret);
-        } 
-        // 3. No URL params and no local session = Invalid Access
-        else {
-            showError();
-        }
-    }
-});
+const isLandingPage = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html');
 
-/**
- * Verify Table Token with Firestore Database
- */
-async function verifyTableSecret(tableNo, secretToken) {
+// ==========================================================================
+// 1. ROUTING & INITIALIZATION LOGIC
+// ==========================================================================
+if (isLandingPage) {
+    // Wait for the GPS Geofencing logic in index.html to pass
+    window.addEventListener('LocationVerified', async () => {
+        await initializeSession();
+    });
+} else {
+    // If user is directly on menu.html or status.html, constantly verify their session
+    verifyOngoingSession();
+}
+
+// ==========================================================================
+// 2. SESSION VERIFICATION (LANDING PAGE)
+// ==========================================================================
+async function initializeSession() {
+    if (urlTable && urlSecret) {
+        // New scan from QR Code
+        await verifyTableSecret(urlTable, urlSecret, true);
+    } 
+    else if (getSession()) {
+        // Returning from background (Refresh)
+        const currentSession = getSession();
+        await verifyTableSecret(currentSession.tableNo, currentSession.secret, true);
+    } 
+    else {
+        showError("Invalid Link", "Please scan the QR code placed on your table to access the menu.");
+    }
+}
+
+async function verifyTableSecret(tableNo, secretToken, isInit = false) {
     try {
         const tableRef = doc(db, "tables", tableNo.toString());
         const tableSnap = await getDoc(tableRef);
@@ -52,45 +58,85 @@ async function verifyTableSecret(tableNo, secretToken) {
         if (tableSnap.exists()) {
             const tableData = tableSnap.data();
             
-            // SECURITY CHECK: Does the secret match what's in the database?
+            // SECURITY CHECK: Does the secret match?
             if (tableData.secret === secretToken) {
-                // Success: Secure session
                 saveSession(tableNo, secretToken);
-                showWelcomeScreen(tableNo);
                 
-                // If it's a fresh scan (status is 'free'), mark table as 'occupied'
-                if (tableData.status === 'free') {
-                    await updateDoc(tableRef, { status: 'occupied' });
+                if (isInit) {
+                    showWelcomeScreen(tableNo);
+                    
+                    // Mark table as occupied when they scan and enter
+                    if (tableData.status === 'free') {
+                        await updateDoc(tableRef, { status: 'occupied' });
+                    }
                 }
             } else {
-                // Token mismatch (Old or fake QR)
-                showError();
+                // Token mismatch (Admin cleared the table and changed token)
+                if(isInit) showError("Session Expired", "This QR code session has ended. Please scan again.");
+                else forceLogout();
             }
         } else {
-            // Table doesn't exist
-            showError();
+            if(isInit) showError("Invalid Table", "This table does not exist in our system.");
+            else forceLogout();
         }
     } catch (error) {
         console.error("Session Verification Error: ", error);
-        showError();
+        if(isInit) showError("Network Error", "Could not verify session. Please check your internet connection.");
     }
 }
 
-/**
- * UI State Controllers
- */
-function showError() {
+// ==========================================================================
+// 3. BACKGROUND SECURITY (MENU & STATUS PAGES)
+// ==========================================================================
+async function verifyOngoingSession() {
+    const session = getSession();
+    if (!session) {
+        forceLogout();
+        return;
+    }
+    
+    // Check if Admin cleared the table while customer was browsing
+    try {
+        const tableSnap = await getDoc(doc(db, "tables", session.tableNo.toString()));
+        if (tableSnap.exists()) {
+            const tableData = tableSnap.data();
+            // If secret changed OR status became free, kill local session
+            if (tableData.secret !== session.secret || tableData.status === 'free') {
+                console.log("Admin cleared table. Logging out customer.");
+                forceLogout();
+            }
+        }
+    } catch (e) {
+        console.error("Ongoing session check failed", e);
+    }
+}
+
+function forceLogout() {
+    clearSession();
+    window.location.href = "index.html";
+}
+
+// ==========================================================================
+// 4. UI STATE CONTROLLERS
+// ==========================================================================
+function showError(title, message) {
+    if (!loaderScreen) return; 
     loaderScreen.classList.remove('active');
     loaderScreen.classList.add('hidden');
+    
+    document.getElementById('error-title-display').innerText = title;
+    document.getElementById('error-msg-text').innerText = message;
+    document.getElementById('error-icon-display').className = "fa-solid fa-triangle-exclamation text-danger fa-4x mb-4";
+    
     errorScreen.classList.remove('hidden');
 }
 
 function showWelcomeScreen(tableNo) {
+    if (!loaderScreen) return;
     loaderScreen.classList.remove('active');
     loaderScreen.classList.add('hidden');
     welcomeScreen.classList.remove('hidden');
     
-    // Update UI with Table Info
     const displayTable = document.getElementById('display-table-no');
     const displayTime = document.getElementById('session-time-display');
     
@@ -98,59 +144,47 @@ function showWelcomeScreen(tableNo) {
     if (displayTime) displayTime.innerText = getSession().startTime;
 }
 
-/**
- * Event Listeners for Buttons on index.html
- */
-
-// "Explore Menu" Button Click
+// ==========================================================================
+// 5. EVENT LISTENERS FOR LANDING PAGE
+// ==========================================================================
 const btnStartOrder = document.getElementById('btn-start-order');
 if (btnStartOrder) {
     btnStartOrder.addEventListener('click', () => {
-        // Show the Optional Marketing Modal before redirecting to menu
         marketingModal.classList.remove('hidden');
     });
 }
 
-// "Skip / Continue as Guest" Button Click
 const btnSkipDetails = document.getElementById('btn-skip-details');
 if (btnSkipDetails) {
     btnSkipDetails.addEventListener('click', () => {
-        // Direct to menu without saving details
         window.location.href = "menu.html";
     });
 }
 
-// "Save & Continue" Form Submit (Marketing Modal)
 const detailsForm = document.getElementById('customer-details-form');
 if (detailsForm) {
     detailsForm.addEventListener('submit', (e) => {
-        e.preventDefault(); // Stop page refresh
-        
+        e.preventDefault(); 
         const name = document.getElementById('cust-name').value.trim();
         const phone = document.getElementById('cust-phone').value.trim();
         
-        // Save to local storage
-        saveSession(getSession().tableNo, getSession().secret); // Ensure session is tight
         saveCustomerDetails(name, phone);
-        
-        // Go to menu
         window.location.href = "menu.html";
     });
 }
 
-// "Request Water" from Landing Page
 const btnCallWater = document.getElementById('btn-call-water-landing');
 if (btnCallWater) {
     btnCallWater.addEventListener('click', async () => {
-        const session = getSession();
-        if (session) {
+        const sessionData = getSession();
+        if (sessionData) {
             btnCallWater.innerHTML = '<i class="fa-solid fa-check"></i> Request Sent';
             btnCallWater.disabled = true;
-            btnCallWater.classList.add('btn-success');
-            btnCallWater.classList.remove('btn-secondary', 'outline');
+            btnCallWater.style.background = '#16A34A';
+            btnCallWater.style.color = 'white';
+            btnCallWater.style.border = 'none';
             
-            // Push alert to Firestore so Admin gets notification
-            const tableRef = doc(db, "tables", session.tableNo.toString());
+            const tableRef = doc(db, "tables", sessionData.tableNo.toString());
             await updateDoc(tableRef, {
                 waterRequest: true,
                 lastRequestTime: new Date().toISOString()
@@ -159,8 +193,9 @@ if (btnCallWater) {
             setTimeout(() => {
                 btnCallWater.innerHTML = '<i class="fa-solid fa-glass-water"></i> Request Water';
                 btnCallWater.disabled = false;
-                btnCallWater.classList.remove('btn-success');
-                btnCallWater.classList.add('btn-secondary', 'outline');
+                btnCallWater.style.background = 'white';
+                btnCallWater.style.color = '#2563EB';
+                btnCallWater.style.border = '2px solid #2563EB';
             }, 5000);
         }
     });
