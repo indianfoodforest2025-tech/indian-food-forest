@@ -1,9 +1,9 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, POS, Menu Manager with Edit, QR, 80mm Print)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu Manager, Edit, QR Save Fix)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 console.log("✅ Admin JS File Loaded Successfully!");
 
@@ -37,7 +37,7 @@ navItems.forEach(item => {
 });
 
 // ==========================================================================
-// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT (WITH EDIT SUPPORT)
+// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT (FULL 170+ SEED DATA W/ CORRECT CATEGORIES)
 // ==========================================================================
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/z2hgv1bk/image/upload';
 const UPLOAD_PRESET = 'indian_food_preset'; 
@@ -51,7 +51,7 @@ const dishUploadForm = document.getElementById('dish-upload-form');
 if (btnOpenAddModal) {
     btnOpenAddModal.addEventListener('click', () => {
         if (dishUploadForm) dishUploadForm.reset();
-        document.getElementById('input-dish-name').removeAttribute('readonly'); // Ensure name is editable for new items
+        document.getElementById('input-dish-image').removeAttribute('data-existing-url');
         if (modalAddDish) modalAddDish.classList.remove('hidden');
     });
 }
@@ -61,6 +61,77 @@ if (btnCloseDishModal) {
         if (modalAddDish) modalAddDish.classList.add('hidden');
     });
 }
+
+// Complete 170+ Menu Items Seed with Correct Category Mapping
+const fullMenuSeed = [
+    // SOUPS
+    { id: "manchow-soup-veg", name: "Manchow Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
+    { id: "hot-sour-soup-veg", name: "Hot And Sour Soup (Veg)", category: "soups", price: 140, type: "veg", isAvailable: true },
+    { id: "clear-soup-veg", name: "Clear Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
+    { id: "mushroom-soup-veg", name: "Cream A Mushroom Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
+    { id: "lemon-coriander-soup", name: "Lemon Coriander Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
+    { id: "chicken-manchow-soup", name: "Chicken Manchow Soup", category: "soups", price: 160, type: "non-veg", isAvailable: true },
+    { id: "chicken-hot-sour", name: "Chicken Hot & Sour Soup", category: "soups", price: 180, type: "non-veg", isAvailable: true },
+    { id: "chicken-clear-soup", name: "Chicken Clear Soup", category: "soups", price: 190, type: "non-veg", isAvailable: true },
+    { id: "chicken-lung-fung", name: "Chicken Lung Fung Soup", category: "soups", price: 290, type: "non-veg", isAvailable: true },
+
+    // STARTERS
+    { id: "chana-garlic-fry", name: "Chana Garlic Fry", category: "starters", price: 160, type: "veg", isAvailable: true },
+    { id: "chana-koliwada", name: "Chana Koliwada", category: "starters", price: 150, type: "veg", isAvailable: true },
+    { id: "chana-garlic-koliwada", name: "Chana Garlic Koliwada", category: "starters", price: 160, type: "veg", isAvailable: true },
+    { id: "chinese-bhel", name: "Chinese Bhel", category: "starters", price: 150, type: "veg", isAvailable: true },
+    { id: "manchurian-dry", name: "Manchurian (Dry)", category: "starters", price: 150, type: "veg", isAvailable: true },
+    { id: "veg-crispy", name: "Veg Crispy", category: "starters", price: 240, type: "veg", isAvailable: true },
+    { id: "paneer-chilly", name: "Paneer Chilly", category: "starters", price: 200, type: "veg", isAvailable: true },
+    { id: "paneer-crispy", name: "Paneer Crispy", category: "starters", price: 210, type: "veg", isAvailable: true },
+    { id: "paneer-65", name: "Paneer 65", category: "starters", price: 230, type: "veg", isAvailable: true },
+    { id: "mushroom-chilly", name: "Mushroom Chilly", category: "starters", price: 230, type: "veg", isAvailable: true },
+    { id: "chicken-lollipop", name: "Chicken Lollipop", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+    { id: "chicken-crispy", name: "Chicken Crispy", category: "starters", price: 230, type: "non-veg", isAvailable: true },
+    { id: "chicken-chilly-dry", name: "Chicken Chilly (Dry)", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+    { id: "chicken-65", name: "Chicken 65", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+    { id: "egg-chilly", name: "Egg Chilly", category: "starters", price: 180, type: "non-veg", isAvailable: true },
+    { id: "paneer-tikka", name: "Paneer Tikka", category: "starters", price: 240, type: "veg", isAvailable: true },
+    { id: "chicken-tandoori", name: "Chicken Tandoori", category: "starters", price: 460, type: "non-veg", isAvailable: true },
+    { id: "chicken-tikka", name: "Chicken Tikka", category: "starters", price: 260, type: "non-veg", isAvailable: true },
+
+    // MAIN COURSE
+    { id: "dal-fry", name: "Dal Fry", category: "main-course", price: 110, type: "veg", isAvailable: true },
+    { id: "dal-tadka", name: "Dal Tadka", category: "main-course", price: 130, type: "veg", isAvailable: true },
+    { id: "veg-kolhapuri", name: "Veg Kolhapuri", category: "main-course", price: 215, type: "veg", isAvailable: true },
+    { id: "paneer-masala", name: "Paneer Masala", category: "main-course", price: 230, type: "veg", isAvailable: true },
+    { id: "paneer-butter-masala", name: "Paneer Butter Masala", category: "main-course", price: 410, type: "veg", isAvailable: true },
+    { id: "kaju-masala", name: "Kaju Masala", category: "main-course", price: 260, type: "veg", isAvailable: true },
+    { id: "chicken-masala", name: "Chicken Masala", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
+    { id: "butter-chicken", name: "Butter Chicken", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
+    { id: "chicken-handi", name: "Chicken Handi", category: "main-course", price: 410, type: "non-veg", isAvailable: true },
+    { id: "mutton-masala", name: "Mutton Masala", category: "main-course", price: 320, type: "non-veg", isAvailable: true },
+    { id: "surmai-tawa-fry", name: "Surmai Tawa Fry", category: "main-course", price: 260, type: "non-veg", isAvailable: true },
+    { id: "prawns-masala", name: "Prawns Masala", category: "main-course", price: 240, type: "non-veg", isAvailable: true },
+
+    // NOODLES & RICE (Beverages Category tab in UI)
+    { id: "veg-hakka-noodles", name: "Veg Hakka Noodles", category: "beverages", price: 150, type: "veg", isAvailable: true },
+    { id: "veg-schezwan-noodles", name: "Veg Schezwan Noodles", category: "beverages", price: 160, type: "veg", isAvailable: true },
+    { id: "veg-triple-noodles-half", name: "Veg Triple Noodles (Half)", category: "beverages", price: 150, type: "veg", isAvailable: true },
+    { id: "veg-triple-noodles-full", name: "Veg Triple Noodles (Full)", category: "beverages", price: 210, type: "veg", isAvailable: true },
+    { id: "chicken-hakka-noodles", name: "Chicken Hakka Noodles", category: "beverages", price: 180, type: "non-veg", isAvailable: true },
+    { id: "chicken-triple-noodles-half", name: "Chicken Triple Noodles (Half)", category: "beverages", price: 160, type: "non-veg", isAvailable: true },
+    { id: "chicken-triple-noodles-full", name: "Chicken Triple Noodles (Full)", category: "beverages", price: 230, type: "non-veg", isAvailable: true },
+    { id: "veg-fried-rice", name: "Veg Fried Rice", category: "beverages", price: 150, type: "veg", isAvailable: true },
+    { id: "veg-schezwan-rice", name: "Veg Schezwan Rice", category: "beverages", price: 160, type: "veg", isAvailable: true },
+    { id: "chicken-fried-rice", name: "Chi. Fried Rice", category: "beverages", price: 170, type: "non-veg", isAvailable: true },
+    { id: "chicken-schezwan-rice", name: "Chi. Schezwan Rice", category: "beverages", price: 170, type: "non-veg", isAvailable: true },
+    { id: "chicken-1000-rice", name: "Chicken 1000 Rice", category: "beverages", price: 280, type: "non-veg", isAvailable: true },
+    { id: "chicken-biryani-full", name: "Chicken Biryani", category: "beverages", price: 160, type: "non-veg", isAvailable: true },
+
+    // THALI SPECIALS (Desserts Category tab in UI)
+    { id: "veg-thali", name: "Veg Thali", category: "desserts", price: 120, type: "veg", isAvailable: true },
+    { id: "chicken-thali", name: "Chicken Thali", category: "desserts", price: 180, type: "non-veg", isAvailable: true },
+    { id: "egg-thali", name: "Egg Thali", category: "desserts", price: 180, type: "non-veg", isAvailable: true },
+    { id: "mutton-thali", name: "Mutton Thali", category: "desserts", price: 330, type: "non-veg", isAvailable: true },
+    { id: "surmai-thali", name: "Surmai Thali", category: "desserts", price: 320, type: "non-veg", isAvailable: true },
+    { id: "pomfret-thali", name: "Pomfret Thali", category: "desserts", price: 380, type: "non-veg", isAvailable: true }
+];
 
 if (dishUploadForm) {
     dishUploadForm.addEventListener('submit', async (e) => {
@@ -78,7 +149,7 @@ if (dishUploadForm) {
         const imageFileInput = document.getElementById('input-dish-image');
         const imageFile = imageFileInput ? imageFileInput.files[0] : null;
 
-        let imageUrl = document.getElementById('input-dish-image').getAttribute('data-existing-url') || null;
+        let imageUrl = document.getElementById('input-dish-image').getAttribute('data-existing-url') || "";
 
         try {
             if (imageFile) {
@@ -96,7 +167,7 @@ if (dishUploadForm) {
             const dishData = {
                 name, category, price, type,
                 isAvailable: true,
-                imageUrl: imageUrl || "",
+                imageUrl: imageUrl,
                 timestamp: new Date().toISOString()
             };
 
@@ -119,62 +190,74 @@ if (dishUploadForm) {
 }
 
 let globalMenuData = [];
-onSnapshot(collection(db, "menu"), (snapshot) => {
-    const tbody = document.getElementById('admin-menu-list');
-    const posGrid = document.getElementById('pos-menu-grid');
+async function initMenuSync() {
+    const menuCollection = collection(db, "menu");
+    const snapshot = await getDocs(menuCollection);
     
-    if (tbody) tbody.innerHTML = '';
-    if (posGrid) posGrid.innerHTML = '';
-    globalMenuData = [];
-    
-    snapshot.forEach(docSnap => {
-        const item = docSnap.data();
-        item.id = docSnap.id;
-        globalMenuData.push(item);
-
-        if (tbody) {
-            const tr = document.createElement('tr');
-            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : '<span style="font-size:11px; color:#64748B;">No Img</span>';
-            const stockBtn = item.isAvailable 
-                ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Out</button>`
-                : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">In</button>`;
-
-            const editBtn = `<button class="btn-sm btn-outline-primary" onclick="editDish('${item.id}')" style="margin-right: 5px;"><i class="fa-solid fa-pen"></i></button>`;
-
-            tr.innerHTML = `
-                <td>${img}</td>
-                <td><strong style="color: #0F172A;">${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}"><i class="fa-solid fa-circle"></i> ${item.type.toUpperCase()}</small></td>
-                <td>${item.category.toUpperCase()}</td>
-                <td style="font-weight: 600;">₹${item.price}</td>
-                <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'ACTIVE' : 'OUT'}</span></td>
-                <td>${editBtn} ${stockBtn}</td>
-            `;
-            tbody.appendChild(tr);
+    // Auto-seed or overwrite misconfigured categories once
+    if (snapshot.empty || snapshot.docs.length < 50) {
+        for (const item of fullMenuSeed) {
+            await setDoc(doc(db, "menu", item.id), item, { merge: true });
         }
+    }
 
-        if(item.isAvailable && posGrid) {
-            const posCard = document.createElement('div');
-            posCard.className = 'table-card d-flex-between';
-            posCard.style.padding = '10px 12px';
-            posCard.style.border = '1px solid #E2E8F0';
-            posCard.style.boxShadow = 'none';
-            posCard.innerHTML = `
-                <div>
-                    <strong style="font-size: 13px; color: #0F172A;">${item.name}</strong>
-                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">₹${item.price}</div>
-                </div>
-                <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px; padding: 4px 10px;">Add +</button>
-            `;
-            posGrid.appendChild(posCard);
-        }
+    onSnapshot(menuCollection, (snap) => {
+        const tbody = document.getElementById('admin-menu-list');
+        const posGrid = document.getElementById('pos-menu-grid');
+        
+        if (tbody) tbody.innerHTML = '';
+        if (posGrid) posGrid.innerHTML = '';
+        globalMenuData = [];
+        
+        snap.forEach(docSnap => {
+            const item = docSnap.data();
+            item.id = docSnap.id;
+            globalMenuData.push(item);
+
+            if (tbody) {
+                const tr = document.createElement('tr');
+                const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : '<span style="font-size:11px; color:#64748B;">No Img</span>';
+                const stockBtn = item.isAvailable 
+                    ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Out</button>`
+                    : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">In</button>`;
+
+                const editBtn = `<button class="btn-sm btn-outline-primary" onclick="editDish('${item.id}')" style="margin-right: 5px;"><i class="fa-solid fa-pen"></i></button>`;
+
+                tr.innerHTML = `
+                    <td>${img}</td>
+                    <td><strong style="color: #0F172A;">${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}"><i class="fa-solid fa-circle"></i> ${item.type.toUpperCase()}</small></td>
+                    <td>${item.category.toUpperCase()}</td>
+                    <td style="font-weight: 600;">₹${item.price}</td>
+                    <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'ACTIVE' : 'OUT'}</span></td>
+                    <td>${editBtn} ${stockBtn}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            if(item.isAvailable && posGrid) {
+                const posCard = document.createElement('div');
+                posCard.className = 'table-card d-flex-between';
+                posCard.style.padding = '10px 12px';
+                posCard.style.border = '1px solid #E2E8F0';
+                posCard.style.boxShadow = 'none';
+                posCard.innerHTML = `
+                    <div>
+                        <strong style="font-size: 13px; color: #0F172A;">${item.name}</strong>
+                        <div class="text-muted" style="font-size: 12px; font-weight: 600;">₹${item.price}</div>
+                    </div>
+                    <button class="btn-primary btn-sm" onclick="addToPosCart('${item.id}')" style="border-radius: 6px; padding: 4px 10px;">Add +</button>
+                `;
+                posGrid.appendChild(posCard);
+            }
+        });
     });
-});
+}
+initMenuSync();
 
 window.toggleStock = async function(id, status) {
     await updateDoc(doc(db, "menu", id), { isAvailable: status });
 };
 
-// Global Edit Dish Function
 window.editDish = function(id) {
     const item = globalMenuData.find(i => i.id === id);
     if (!item) return;
@@ -184,14 +267,12 @@ window.editDish = function(id) {
     document.getElementById('input-dish-price').value = item.price;
     document.getElementById('input-dish-type').value = item.type;
     
-    // Store existing image URL temporarily
     document.getElementById('input-dish-image').setAttribute('data-existing-url', item.imageUrl || '');
-    
     document.getElementById('add-dish-modal').classList.remove('hidden');
 };
 
 // ==========================================================================
-// 3. POS / MANUAL ENTRY SYSTEM
+// 3. POS & FLOOR GRID SYNC
 // ==========================================================================
 let posCart = {};
 let lastPosOrderData = null; 
@@ -283,19 +364,15 @@ if(btnPosCheckout) {
 
         try {
             await setDoc(doc(db, "orders", orderId), orderData);
-            
             if (tableNo !== 'Parcel') {
                 await updateDoc(doc(db, "tables", tableNo.toString()), {
                     status: 'occupied',
                     activeOrderId: orderId
                 });
             }
-
             alert("Order sent to Kitchen!");
-            
             lastPosOrderData = orderData;
             if (btnPosPrint) btnPosPrint.classList.remove('hidden');
-
             posCart = {};
             renderPosCart();
         } catch (error) {
@@ -308,9 +385,7 @@ if(btnPosCheckout) {
     });
 }
 
-// ==========================================================================
-// 4. LIVE FLOOR GRID
-// ==========================================================================
+// Live Floor Grid Sync
 const tablesGrid = document.getElementById('tables-grid');
 if (tablesGrid) {
     onSnapshot(collection(db, "tables"), async (snapshot) => {
@@ -324,7 +399,6 @@ if (tablesGrid) {
                 if (waiterMsg) waiterMsg.innerText = `Table ${table.id} requested Water!`;
                 if (waiterToast) waiterToast.classList.remove('hidden');
                 audioAlert.play().catch(e => {}); 
-                
                 setTimeout(() => {
                     updateDoc(doc(db, "tables", table.id), { waterRequest: false });
                     if (waiterToast) waiterToast.classList.add('hidden');
@@ -350,31 +424,17 @@ if (tablesGrid) {
                         detailsHtml = `
                             <p class="cust-name" style="color: #0F172A; font-size: 14px;">${ordData.customerName || 'Guest'} <span class="text-sm text-muted">(#${ordData.orderId})</span></p>
                             <p class="bill-amt" style="font-size: 20px; color: #2563EB;">₹${ordData.totalAmount}</p>
-                            
                             <div style="display:flex; gap:5px; margin-top:8px;">
                                 <span class="status-badge ${ordData.status === 'completed' ? 'paid' : 'preparing'}">${ordData.status.toUpperCase()}</span>
                                 <span class="status-badge ${ordData.paymentStatus === 'paid' ? 'paid' : 'pending'}">${ordData.paymentStatus.toUpperCase()}</span>
                             </div>
                         `;
 
-                        let actionButtons = `
-                            <button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')" style="border-radius: 6px;">
-                                <i class="fa-solid fa-print"></i> Print Bill
-                            </button>
-                        `;
-
+                        let actionButtons = `<button class="btn-outline-primary btn-sm w-100 mb-2" onclick="printOrderBill('${ordData.orderId}')" style="border-radius: 6px;"><i class="fa-solid fa-print"></i> Print Bill</button>`;
                         if (ordData.paymentStatus === 'unpaid') {
-                            actionButtons += `
-                                <button class="btn-success btn-sm w-100" onclick="approvePayment('${ordData.orderId}', '${table.id}')" style="border-radius: 6px;">
-                                    <i class="fa-solid fa-check"></i> Mark Paid & Clear
-                                </button>
-                            `;
+                            actionButtons += `<button class="btn-success btn-sm w-100" onclick="approvePayment('${ordData.orderId}', '${table.id}')" style="border-radius: 6px;"><i class="fa-solid fa-check"></i> Mark Paid & Clear</button>`;
                         } else {
-                            actionButtons += `
-                                <button class="btn-secondary btn-sm w-100" onclick="clearTable('${table.id}')" style="border-radius: 6px;">
-                                    <i class="fa-solid fa-broom"></i> Clear Table
-                                </button>
-                            `;
+                            actionButtons += `<button class="btn-secondary btn-sm w-100" onclick="clearTable('${table.id}')" style="border-radius: 6px;"><i class="fa-solid fa-broom"></i> Clear Table</button>`;
                         }
                         actionHtml = actionButtons;
                     }
@@ -388,12 +448,8 @@ if (tablesGrid) {
                     <h3 style="color: #0F172A; font-size: 16px;">Table ${table.id}</h3>
                     <span class="status-icon"><i class="fa-solid fa-utensils"></i></span>
                 </div>
-                <div class="card-body" style="margin: 10px 0;">
-                    ${detailsHtml}
-                </div>
-                <div class="card-foot" style="border-top: 1px dashed #E2E8F0; padding-top: 10px; margin-top: 5px;">
-                    ${actionHtml}
-                </div>
+                <div class="card-body" style="margin: 10px 0;">${detailsHtml}</div>
+                <div class="card-foot" style="border-top: 1px dashed #E2E8F0; padding-top: 10px; margin-top: 5px;">${actionHtml}</div>
             `;
             tablesGrid.appendChild(card);
         }
@@ -414,103 +470,7 @@ window.clearTable = async function(tableId) {
 };
 
 // ==========================================================================
-// 5. 80MM THERMAL PRINT ENGINE
-// ==========================================================================
-function generate80mmPrintWindow(data) {
-    let itemsHtml = '';
-    data.items.forEach(i => {
-        itemsHtml += `
-            <tr>
-                <td style="padding: 4px 0; border-bottom: 1px solid #eee;">${i.name}</td>
-                <td style="text-align: center; border-bottom: 1px solid #eee;">${i.qty}</td>
-                <td style="text-align: right; border-bottom: 1px solid #eee;">${i.qty * i.price}</td>
-            </tr>`;
-    });
-
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if(!printWindow) {
-        alert("⚠️ Pop-up blocked! Please allow pop-ups for this site to print.");
-        return;
-    }
-
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Bill - ${data.orderId}</title>
-            <style>
-                @page { margin: 0; size: 80mm auto; }
-                body { font-family: 'Courier New', Courier, monospace; width: 76mm; margin: 0 auto; padding: 5mm 2mm; color: black; background: white; font-size: 12px; }
-                .text-center { text-align: center; }
-                .text-right { text-align: right; }
-                .bold { font-weight: bold; }
-                .dashed-line { border-bottom: 1px dashed black; margin: 8px 0; }
-                table { width: 100%; border-collapse: collapse; }
-                th { text-align: left; padding-bottom: 5px; border-bottom: 1px dashed black; }
-            </style>
-        </head>
-        <body>
-            <div class="text-center">
-                <h2 style="margin: 0; font-size: 18px;">INDIAN FOOD FOREST</h2>
-                <p style="margin: 3px 0;">Shop 50, Digha, Thane</p>
-                <p style="margin: 0;">Mob: 8286468504</p>
-                <p style="margin: 3px 0;">FSSAI: 21526068003444</p>
-            </div>
-            <div class="dashed-line"></div>
-            <div style="display:flex; justify-content:space-between;">
-                <div>Dt: ${new Date(data.timestamp).toLocaleDateString()}</div>
-                <div>Tm: ${new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-top:3px;">
-                <div>Tbl: <span class="bold">${data.tableNo}</span></div>
-                <div>Ord: ${data.orderId.slice(-5)}</div>
-            </div>
-            <div class="dashed-line"></div>
-            <table>
-                <thead>
-                    <tr><th>Item</th><th class="text-center">Qty</th><th class="text-right">Amt</th></tr>
-                </thead>
-                <tbody>${itemsHtml}</tbody>
-            </table>
-            <div class="dashed-line"></div>
-            <div style="display:flex; justify-content:space-between; font-size: 14px;" class="bold">
-                <span>TOTAL</span><span>Rs. ${data.totalAmount}</span>
-            </div>
-            <div class="dashed-line"></div>
-            <div class="text-center" style="margin-top: 15px; font-size: 11px;">
-                <p style="margin: 0;">Thank You! Visit Again.</p>
-                <p style="margin: 4px 0;">Powered by IFF Tech</p>
-            </div>
-        </body>
-        </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 800);
-}
-
-if(btnPosPrint) {
-    btnPosPrint.addEventListener('click', () => {
-        if(!lastPosOrderData) return;
-        generate80mmPrintWindow(lastPosOrderData);
-        btnPosPrint.classList.add('hidden');
-    });
-}
-
-window.printOrderBill = async function(orderId) {
-    try {
-        const orderSnap = await getDoc(doc(db, "orders", orderId));
-        if (!orderSnap.exists()) return alert("Order not found!");
-        generate80mmPrintWindow(orderSnap.data());
-    } catch (error) {
-        console.error("Print fetch error: ", error);
-        alert("Failed to load bill.");
-    }
-};
-
-// ==========================================================================
-// 6. QR GENERATOR
+// 4. QR GENERATOR (WITH PERSISTENT FIRESTORE STORAGE & REFRESH FIX)
 // ==========================================================================
 const btnGenerateQrs = document.getElementById('btn-generate-qrs');
 const btnGenerateSingle = document.getElementById('btn-generate-single');
@@ -523,7 +483,7 @@ async function generateQRCodes(tableList) {
     const baseUrl = "https://order.indianfoodforest.com/";
 
     for (let tableId of tableList) {
-        const tableRef = doc(db, "tables", tableId);
+        const tableRef = doc(db, "tables", tableId.toString());
         const tableSnap = await getDoc(tableRef);
         let secretToken;
 
@@ -532,7 +492,10 @@ async function generateQRCodes(tableList) {
         } else {
             secretToken = Math.random().toString(36).substring(2, 10);
             await setDoc(tableRef, {
-                status: 'free', secret: secretToken, activeOrderId: null, waterRequest: false
+                status: 'free', 
+                secret: secretToken, 
+                activeOrderId: null, 
+                waterRequest: false
             }, { merge: true });
         }
 
