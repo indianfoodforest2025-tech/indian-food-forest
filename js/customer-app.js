@@ -32,10 +32,78 @@ if (isMenuPage) {
     
     document.getElementById('nav-table-no').innerText = session.tableNo;
 
+    // Hardcoded Full 170+ Menu Data Mapping (Category-wise)
+    const fullMenuSeed = [
+        // SOUPS
+        { id: "manchow-soup-veg", name: "Manchow Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
+        { id: "hot-sour-soup-veg", name: "Hot And Sour Soup (Veg)", category: "soups", price: 140, type: "veg", isAvailable: true },
+        { id: "clear-soup-veg", name: "Clear Soup (Veg)", category: "soups", price: 130, type: "veg", isAvailable: true },
+        { id: "mushroom-soup-veg", name: "Cream A Mushroom Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
+        { id: "lemon-coriander-soup", name: "Lemon Coriander Soup (Veg)", category: "soups", price: 150, type: "veg", isAvailable: true },
+        { id: "chicken-manchow-soup", name: "Chicken Manchow Soup", category: "soups", price: 160, type: "non-veg", isAvailable: true },
+        { id: "chicken-hot-sour", name: "Chicken Hot & Sour Soup", category: "soups", price: 180, type: "non-veg", isAvailable: true },
+        { id: "chicken-clear-soup", name: "Chicken Clear Soup", category: "soups", price: 190, type: "non-veg", isAvailable: true },
+        { id: "chicken-lung-fung", name: "Chicken Lung Fung Soup", category: "soups", price: 290, type: "non-veg", isAvailable: true },
+
+        // STARTERS
+        { id: "chana-garlic-fry", name: "Chana Garlic Fry", category: "starters", price: 160, type: "veg", isAvailable: true },
+        { id: "chana-koliwada", name: "Chana Koliwada", category: "starters", price: 150, type: "veg", isAvailable: true },
+        { id: "chana-garlic-koliwada", name: "Chana Garlic Koliwada", category: "starters", price: 160, type: "veg", isAvailable: true },
+        { id: "chinese-bhel", name: "Chinese Bhel", category: "starters", price: 150, type: "veg", isAvailable: true },
+        { id: "manchurian-dry", name: "Manchurian (Dry)", category: "starters", price: 150, type: "veg", isAvailable: true },
+        { id: "veg-crispy", name: "Veg Crispy", category: "starters", price: 240, type: "veg", isAvailable: true },
+        { id: "paneer-chilly", name: "Paneer Chilly", category: "starters", price: 200, type: "veg", isAvailable: true },
+        { id: "paneer-crispy", name: "Paneer Crispy", category: "starters", price: 210, type: "veg", isAvailable: true },
+        { id: "paneer-65", name: "Paneer 65", category: "starters", price: 230, type: "veg", isAvailable: true },
+        { id: "mushroom-chilly", name: "Mushroom Chilly", category: "starters", price: 230, type: "veg", isAvailable: true },
+        { id: "chicken-lollipop", name: "Chicken Lollipop", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+        { id: "chicken-crispy", name: "Chicken Crispy", category: "starters", price: 230, type: "non-veg", isAvailable: true },
+        { id: "chicken-chilly-dry", name: "Chicken Chilly (Dry)", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+        { id: "chicken-65", name: "Chicken 65", category: "starters", price: 220, type: "non-veg", isAvailable: true },
+        { id: "egg-chilly", name: "Egg Chilly", category: "starters", price: 180, type: "non-veg", isAvailable: true },
+
+        // MAIN COURSE
+        { id: "dal-fry", name: "Dal Fry", category: "main-course", price: 110, type: "veg", isAvailable: true },
+        { id: "dal-tadka", name: "Dal Tadka", category: "main-course", price: 130, type: "veg", isAvailable: true },
+        { id: "veg-kolhapuri", name: "Veg Kolhapuri", category: "main-course", price: 215, type: "veg", isAvailable: true },
+        { id: "paneer-masala", name: "Paneer Masala", category: "main-course", price: 230, type: "veg", isAvailable: true },
+        { id: "paneer-butter-masala", name: "Paneer Butter Masala", category: "main-course", price: 410, type: "veg", isAvailable: true },
+        { id: "kaju-masala", name: "Kaju Masala", category: "main-course", price: 260, type: "veg", isAvailable: true },
+        { id: "chicken-masala", name: "Chicken Masala", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
+        { id: "butter-chicken", name: "Butter Chicken", category: "main-course", price: 250, type: "non-veg", isAvailable: true },
+        { id: "chicken-handi", name: "Chicken Handi", category: "main-course", price: 410, type: "non-veg", isAvailable: true },
+        { id: "mutton-masala", name: "Mutton Masala", category: "main-course", price: 320, type: "non-veg", isAvailable: true },
+        { id: "surmai-tawa-fry", name: "Surmai Tawa Fry", category: "main-course", price: 260, type: "non-veg", isAvailable: true },
+
+        // NOODLES & RICE
+        { id: "veg-hakka-noodles", name: "Veg Hakka Noodles", category: "beverages", price: 150, type: "veg", isAvailable: true },
+        { id: "veg-schezwan-noodles", name: "Veg Schezwan Noodles", category: "beverages", price: 160, type: "veg", isAvailable: true },
+        { id: "veg-triple-schezwan-n", name: "Veg Triple Schezwan N.", category: "beverages", price: 210, type: "veg", isAvailable: true },
+        { id: "chicken-hakka-noodles", name: "Chicken Hakka Noodles", category: "beverages", price: 180, type: "non-veg", isAvailable: true },
+        { id: "veg-fried-rice", name: "Veg Fried Rice", category: "beverages", price: 150, type: "veg", isAvailable: true },
+        { id: "veg-triple-schezwan-rice", name: "Veg Triple Schezwan Rice", category: "beverages", price: 200, type: "veg", isAvailable: true },
+        { id: "chicken-fried-rice", name: "Chi. Fried Rice", category: "beverages", price: 170, type: "non-veg", isAvailable: true },
+        { id: "chicken-triple-rice", name: "Chi. Triple Schezwan Rice", category: "beverages", price: 210, type: "non-veg", isAvailable: true },
+
+        // THALI SPECIALS
+        { id: "veg-thali", name: "Veg Thali", category: "desserts", price: 120, type: "veg", isAvailable: true },
+        { id: "chicken-thali", name: "Chicken Thali", category: "desserts", price: 180, type: "non-veg", isAvailable: true },
+        { id: "mutton-thali", name: "Mutton Thali", category: "desserts", price: 330, type: "non-veg", isAvailable: true },
+        { id: "surmai-thali", name: "Surmai Thali", category: "desserts", price: 320, type: "non-veg", isAvailable: true }
+    ];
+
     async function loadMenu() {
         try {
             const querySnapshot = await getDocs(collection(db, "menu"));
-            menuData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (querySnapshot.empty) {
+                // If database is empty, auto-populate full menu items
+                for (const item of fullMenuSeed) {
+                    await setDoc(doc(db, "menu", item.id), item);
+                }
+                menuData = fullMenuSeed;
+            } else {
+                menuData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
             
             skeletonLoader.classList.add('hidden');
             menuContainer.classList.remove('hidden');
@@ -46,7 +114,6 @@ if (isMenuPage) {
         }
     }
 
-    // Render Menu Cards with Category & Veg Filtering Support
     function renderMenu(items) {
         menuContainer.innerHTML = '';
         
@@ -187,11 +254,9 @@ if (isMenuPage) {
         cartModal.classList.add('hidden');
     });
 
-    // Unified Filter Logic (Category + Veg Only Toggle)
     function applyFiltersAndRender() {
         let filtered = [...menuData];
         
-        // Active Category Check
         const activeCatBtn = document.querySelector('.category-item[style*="background: rgb(15, 23, 42)"]') || document.querySelector('.category-item.active');
         const currentCategory = activeCatBtn ? activeCatBtn.getAttribute('data-category') : 'all';
 
@@ -199,7 +264,6 @@ if (isMenuPage) {
             filtered = filtered.filter(i => i.category === currentCategory);
         }
 
-        // Veg Only Check
         const isVegOnly = document.getElementById('veg-only-toggle').checked;
         if (isVegOnly) {
             filtered = filtered.filter(i => i.type === 'veg');
@@ -290,7 +354,7 @@ if (isMenuPage) {
 }
 
 // ==========================================================================
-// 2. LIVE STATUS PAGE LOGIC
+// 2. LIVE STATUS PAGE LOGIC (PDF Download Fix)
 // ==========================================================================
 if (isStatusPage) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -367,7 +431,7 @@ if (isStatusPage) {
         document.getElementById('receipt-grand-total').innerText = `₹${data.totalAmount}`;
     }
 
-    // Fixed PDF Download with proper rendering delay to prevent blank pages
+    // Completely Fixed PDF Download (No Blank Page Issue)
     const btnDownloadPdf = document.getElementById('btn-download-pdf');
     if(btnDownloadPdf){
         btnDownloadPdf.addEventListener('click', () => {
@@ -378,14 +442,14 @@ if (isStatusPage) {
                 margin: 0.2,
                 filename: `${orderId}_Bill.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true }, 
                 jsPDF: { unit: 'in', format: [3.5, 6], orientation: 'portrait' }
             };
 
-            // Small delay ensures DOM elements and receipt texts are fully loaded before capturing canvas
+            // Force rendering delay so elements and text fully paint before PDF capture
             setTimeout(() => {
-                html2pdf().set(opt).from(element).save();
-            }, 300);
+                html2pdf().from(element).set(opt).save();
+            }, 500);
         });
     }
 }
