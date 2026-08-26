@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Menu | Indian Food Forest</title>
     
-    <!-- Google Fonts -->
+    <!-- Premium Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -14,137 +17,199 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/customer.css">
 
-    <!-- STRICT FIX: Force Hidden Elements to stay Hidden -->
+    <!-- STRICT FIXES FOR MODAL & FLOATING CART -->
     <style>
         .hidden { display: none !important; }
+        
+        /* Premium Floating Cart Pill (Swiggy/Zomato Style) */
+        #floating-cart-bar {
+            cursor: pointer;
+            background: #0F172A !important;
+            padding: 8px 8px 8px 24px !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-radius: 50px !important;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4) !important;
+            z-index: 999;
+            width: 90% !important;
+            max-width: 380px !important;
+            position: fixed !important;
+            bottom: 25px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* Bottom Sheet Cart Modal Fix */
+        #cart-review-modal:not(.hidden) {
+            display: flex !important;
+            align-items: flex-end !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(4px);
+            z-index: 9999 !important;
+        }
+        
+        .bottom-sheet {
+            width: 100% !important;
+            max-width: 500px !important;
+            max-height: 85vh !important;
+            background: white !important;
+            border-radius: 24px 24px 0 0 !important;
+            margin: 0 auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        /* Custom Scrollbar for Cart Body */
+        .cart-body::-webkit-scrollbar { width: 4px; }
+        .cart-body::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
     </style>
 </head>
-<body class="customer-body bg-light">
+<body class="customer-body" style="background: #F8FAFC; max-width: 500px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-height: 100vh; position: relative;">
 
     <!-- 1. TOP NAVIGATION & CONTROLS -->
-    <header class="menu-header sticky-top">
-        <div class="header-top">
-            <div class="brand-mini">
-                <i class="fa-solid fa-leaf text-primary"></i>
-                <span class="brand-title">Indian Food Forest</span>
+    <header class="menu-header sticky-top" style="background: white; padding: 15px 20px 0; border-bottom: 1px solid #E2E8F0; z-index: 100;">
+        <div class="header-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="brand-mini" style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: #0F172A; font-size: 18px;">
+                <div style="width: 35px; height: 35px; background: #EFF6FF; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-leaf text-success"></i>
+                </div>
+                Indian Food Forest
             </div>
-            <div class="table-badge-small">
-                <i class="fa-solid fa-bell-concierge"></i> Table <span id="nav-table-no">--</span>
+            <div class="table-badge-small" style="background: #F1F5F9; color: #0F172A; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                <i class="fa-solid fa-bell-concierge text-primary" style="margin-right: 5px;"></i> Table <span id="nav-table-no">--</span>
             </div>
         </div>
 
-        <div class="header-controls">
+        <div class="header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <!-- Veg / Non-Veg Toggle -->
-            <div class="veg-toggle-container">
+            <div class="veg-toggle-container" style="display: flex; align-items: center; gap: 8px; background: #F8FAFC; padding: 6px 12px; border-radius: 20px; border: 1px solid #E2E8F0;">
                 <label class="toggle-switch">
                     <input type="checkbox" id="veg-only-toggle">
                     <span class="slider round"></span>
                 </label>
-                <span class="toggle-label"><i class="fa-solid fa-leaf text-success"></i> Veg Only</span>
+                <span class="toggle-label" style="font-size: 13px; font-weight: 600; color: #475569;"><span style="color: #16A34A;">●</span> Veg Only</span>
             </div>
             
             <!-- Quick Action: Water Request -->
-            <button id="btn-request-water" class="btn-icon-text">
-                <i class="fa-solid fa-glass-water"></i> Water
+            <button id="btn-request-water" style="background: white; border: 1px solid #CBD5E1; color: #0F172A; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <i class="fa-solid fa-glass-water text-primary"></i> Water
             </button>
         </div>
 
         <!-- Horizontal Scrollable Categories -->
-        <nav class="category-nav">
-            <ul class="category-list" id="category-list">
-                <li class="category-item active" data-category="all">All</li>
-                <li class="category-item" data-category="starters">Starters</li>
-                <li class="category-item" data-category="main-course">Main Course</li>
-                <li class="category-item" data-category="beverages">Beverages</li>
-                <li class="category-item" data-category="desserts">Desserts</li>
+        <nav class="category-nav" style="margin: 0 -20px; padding: 0 20px; overflow-x: auto; scrollbar-width: none;">
+            <ul class="category-list" id="category-list" style="display: flex; gap: 10px; padding-bottom: 15px; margin: 0; list-style: none;">
+                <li class="category-item active" data-category="all" style="padding: 8px 18px; background: #0F172A; color: white; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;">All Items</li>
+                <li class="category-item" data-category="starters" style="padding: 8px 18px; background: white; border: 1px solid #CBD5E1; color: #475569; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;">Starters</li>
+                <li class="category-item" data-category="main-course" style="padding: 8px 18px; background: white; border: 1px solid #CBD5E1; color: #475569; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;">Main Course</li>
+                <li class="category-item" data-category="beverages" style="padding: 8px 18px; background: white; border: 1px solid #CBD5E1; color: #475569; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;">Beverages</li>
+                <li class="category-item" data-category="desserts" style="padding: 8px 18px; background: white; border: 1px solid #CBD5E1; color: #475569; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;">Desserts</li>
             </ul>
         </nav>
     </header>
 
     <!-- 2. MAIN MENU GRID -->
-    <main class="menu-main-content">
+    <main class="menu-main-content" style="padding: 20px;">
         
-        <!-- SKELETON LOADERS -->
-        <div id="menu-skeleton-loader" class="menu-grid">
-            <div class="skeleton-card">
-                <div class="skeleton-img pulse"></div>
-                <div class="skeleton-text title pulse"></div>
-                <div class="skeleton-text desc pulse"></div>
-                <div class="skeleton-footer">
-                    <div class="skeleton-text price pulse"></div>
-                    <div class="skeleton-btn pulse"></div>
+        <!-- SKELETON LOADERS (Premium pulse effect) -->
+        <div id="menu-skeleton-loader" class="menu-grid" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="skeleton-card" style="display: flex; gap: 15px; padding: 15px; background: white; border-radius: 16px; border: 1px solid #E2E8F0;">
+                <div class="skeleton-img pulse" style="width: 110px; height: 110px; background: #E2E8F0; border-radius: 12px;"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton-text pulse" style="width: 70%; height: 18px; background: #E2E8F0; border-radius: 4px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-text pulse" style="width: 40%; height: 12px; background: #E2E8F0; border-radius: 4px; margin-bottom: 25px;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="skeleton-text pulse" style="width: 50px; height: 18px; background: #E2E8F0; border-radius: 4px;"></div>
+                        <div class="skeleton-btn pulse" style="width: 80px; height: 35px; background: #E2E8F0; border-radius: 8px;"></div>
+                    </div>
                 </div>
             </div>
-            <div class="skeleton-card">
-                <div class="skeleton-img pulse"></div>
-                <div class="skeleton-text title pulse"></div>
-                <div class="skeleton-text desc pulse"></div>
-                <div class="skeleton-footer">
-                    <div class="skeleton-text price pulse"></div>
-                    <div class="skeleton-btn pulse"></div>
+            <!-- Duplicate skeleton for effect -->
+            <div class="skeleton-card" style="display: flex; gap: 15px; padding: 15px; background: white; border-radius: 16px; border: 1px solid #E2E8F0;">
+                <div class="skeleton-img pulse" style="width: 110px; height: 110px; background: #E2E8F0; border-radius: 12px;"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton-text pulse" style="width: 60%; height: 18px; background: #E2E8F0; border-radius: 4px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-text pulse" style="width: 30%; height: 12px; background: #E2E8F0; border-radius: 4px; margin-bottom: 25px;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="skeleton-text pulse" style="width: 50px; height: 18px; background: #E2E8F0; border-radius: 4px;"></div>
+                        <div class="skeleton-btn pulse" style="width: 80px; height: 35px; background: #E2E8F0; border-radius: 8px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- ACTUAL MENU ITEMS -->
-        <div id="menu-items-container" class="menu-grid hidden"></div>
+        <div id="menu-items-container" class="menu-grid hidden" style="display: flex; flex-direction: column; gap: 20px;"></div>
         
         <!-- Bottom space so last item is not hidden behind cart -->
-        <div class="menu-bottom-spacer" style="height: 100px;"></div>
+        <div class="menu-bottom-spacer" style="height: 120px;"></div>
     </main>
 
-    <!-- 3. COMPACT FLOATING CART BAR (CHOTA PILL DESIGN) -->
-    <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart" style="cursor: pointer; background: #0F172A !important; padding: 6px 6px 6px 20px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 15px !important; border-radius: 50px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important; z-index: 999 !important; width: max-content !important; min-width: 220px; position: fixed !important; bottom: 20px !important; left: 50% !important; transform: translateX(-50%) !important; margin: 0 !important; border: 1px solid #334155;">
-        
-        <!-- Left Side: Price -->
+    <!-- 3. COMPACT FLOATING CART BAR (SWIGGY/ZOMATO STYLE PILL) -->
+    <div id="floating-cart-bar" class="floating-cart hidden slide-up-cart">
+        <!-- Left Side: Price & Items -->
         <div class="cart-summary" style="display: flex; flex-direction: column; text-align: left;">
-            <span id="cart-item-count" style="font-size: 10px; color: #94A3B8; font-weight: 600; line-height: 1.2;">0 ITEMS</span>
-            <span id="cart-total-price" style="font-size: 16px; font-weight: 700; color: white; line-height: 1.2;">₹0</span>
+            <span id="cart-item-count" style="font-size: 11px; color: #94A3B8; font-weight: 600; letter-spacing: 0.5px;">0 ITEMS</span>
+            <span id="cart-total-price" style="font-size: 18px; font-weight: 700; color: white;">₹0</span>
         </div>
         
         <!-- Right Side: View Cart Button -->
-        <button id="btn-view-cart" onclick="document.getElementById('cart-review-modal').classList.remove('hidden');" style="background: #16A34A !important; color: white !important; border: none !important; padding: 10px 20px !important; border-radius: 40px !important; font-weight: 600 !important; font-size: 14px !important; display: flex !important; align-items: center !important; gap: 6px !important; margin: 0 !important;">
-            View Cart <i class="fa-solid fa-arrow-right"></i>
+        <button id="btn-view-cart" style="background: #16A34A !important; color: white !important; border: none !important; padding: 12px 24px !important; border-radius: 40px !important; font-weight: 600 !important; font-size: 15px !important; display: flex !important; align-items: center !important; gap: 8px !important; margin: 0 !important; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);">
+            View Cart <i class="fa-solid fa-cart-shopping"></i>
         </button>
     </div>
 
-    <!-- 4. CART REVIEW MODAL -->
-    <div id="cart-review-modal" class="modal-overlay hidden">
-        <div class="modal-card bottom-sheet slide-up">
-            <div class="modal-header d-flex-between">
-                <h3>Your Order</h3>
-                <!-- DIRECT FIX for Cross Button -->
-                <button id="btn-close-cart" class="btn-icon" onclick="document.getElementById('cart-review-modal').classList.add('hidden');"><i class="fa-solid fa-xmark"></i></button>
+    <!-- 4. CART REVIEW MODAL (BOTTOM SHEET) -->
+    <div id="cart-review-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <div class="modal-card bottom-sheet slide-up" style="max-width: 500px; width: 100%; align-self: flex-end;">
+            
+            <!-- Modal Header -->
+            <div class="modal-header d-flex-between" style="padding: 20px 25px !important; border-bottom: 1px solid #E2E8F0 !important; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin: 0;">Your Order</h3>
+                <button id="btn-close-cart" class="btn-icon" style="background: #F1F5F9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748B;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             
-            <div class="modal-body cart-body">
-                <ul id="cart-items-list" class="cart-items-list"></ul>
+            <!-- Modal Body -->
+            <div class="modal-body cart-body" style="padding: 20px 25px !important; overflow-y: auto !important; flex: 1;">
+                <ul id="cart-items-list" class="cart-items-list" style="padding: 0; margin: 0 0 20px 0; list-style: none;">
+                    <!-- JS Injects cart items here -->
+                </ul>
                 
-                <div class="special-instruction-box">
-                    <label for="cooking-instructions"><i class="fa-solid fa-message"></i> Cooking Instructions (Optional)</label>
-                    <textarea id="cooking-instructions" rows="2" placeholder="E.g., Less spicy, no onions..."></textarea>
+                <div class="special-instruction-box" style="background: #F8FAFC; padding: 15px; border-radius: 12px; border: 1px dashed #CBD5E1;">
+                    <label for="cooking-instructions" style="font-size: 13px; font-weight: 600; color: #0F172A; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-message text-primary"></i> Cooking Instructions (Optional)
+                    </label>
+                    <textarea id="cooking-instructions" rows="2" placeholder="E.g., Make it less spicy, no onions..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0; outline: none; font-family: inherit; font-size: 13px; resize: none;"></textarea>
                 </div>
-                
-                <!-- BILL SUMMARY HATA DIYA GAYA HAI -->
-                
             </div>
             
-            <!-- MODAL FOOTER WITH PLACE ORDER BUTTON ON LEFT -->
-            <div class="modal-footer" style="text-align: left;">
-                <button id="btn-place-order" class="btn-primary" style="width: max-content; padding: 12px 30px; border-radius: 12px; font-size: 16px; font-weight: 600;">
-                    Place Order <i class="fa-solid fa-arrow-right"></i>
+            <!-- Modal Footer (Fixed at bottom) -->
+            <div class="modal-footer" style="padding: 20px 25px !important; border-top: 1px solid #E2E8F0 !important; background: white !important; border-radius: 0 0 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="font-size: 12px; color: #64748B; margin: 0; font-weight: 500;">To Pay</p>
+                    <h3 id="bill-grand-total" style="font-size: 22px; color: #0F172A; margin: 0;">₹0</h3>
+                </div>
+                <button id="btn-place-order" class="btn-primary" style="padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 600; background: #2563EB; color: white; border: none; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                    Place Order <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast-notification" class="toast hidden">
-        <i class="fa-solid fa-circle-check"></i> <span id="toast-msg">Item added!</span>
+    <!-- Premium Toast Notification -->
+    <div id="toast-notification" class="toast hidden" style="position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; z-index: 9999; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
+        <i class="fa-solid fa-circle-check text-success"></i> <span id="toast-msg">Item added!</span>
     </div>
 
     <!-- JavaScript Files -->
     <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/session.js"></script>
     <script type="module" src="js/customer-app.js"></script>
     
