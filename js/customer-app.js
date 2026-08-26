@@ -46,14 +46,18 @@ if (isMenuPage) {
         }
     }
 
-    // Render Menu Cards with "Food" text fallback if image is missing
+    // Render Menu Cards with Category & Veg Filtering Support
     function renderMenu(items) {
         menuContainer.innerHTML = '';
         
+        if (items.length === 0) {
+            menuContainer.innerHTML = '<p class="text-center text-muted mt-4" style="font-size:13px;">No items found in this category.</p>';
+            return;
+        }
+
         items.forEach(item => {
             if(item.isAvailable === false) return; 
             
-            // Smart Image Fallback: Agar image nahi hai toh clean "Food" box dikhayega
             const imgHtml = (item.imageUrl && item.imageUrl.trim() !== "") 
                 ? `<img src="${item.imageUrl}" alt="${item.name}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">` 
                 : `<div style="width: 100%; height: 100%; background: #F1F5F9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748B; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-utensils mb-1" style="font-size: 16px;"></i> Food</div>`;
@@ -117,7 +121,7 @@ if (isMenuPage) {
         cart[id].qty += change;
         if (cart[id].qty <= 0) delete cart[id];
         
-        renderMenu(menuData);
+        applyFiltersAndRender();
         updateCartFloatingBar();
     }
 
@@ -183,13 +187,29 @@ if (isMenuPage) {
         cartModal.classList.add('hidden');
     });
 
-    document.getElementById('veg-only-toggle').addEventListener('change', (e) => {
-        const isVegOnly = e.target.checked;
-        if (isVegOnly) {
-            renderMenu(menuData.filter(i => i.type === 'veg'));
-        } else {
-            renderMenu(menuData);
+    // Unified Filter Logic (Category + Veg Only Toggle)
+    function applyFiltersAndRender() {
+        let filtered = [...menuData];
+        
+        // Active Category Check
+        const activeCatBtn = document.querySelector('.category-item[style*="background: rgb(15, 23, 42)"]') || document.querySelector('.category-item.active');
+        const currentCategory = activeCatBtn ? activeCatBtn.getAttribute('data-category') : 'all';
+
+        if (currentCategory && currentCategory !== 'all') {
+            filtered = filtered.filter(i => i.category === currentCategory);
         }
+
+        // Veg Only Check
+        const isVegOnly = document.getElementById('veg-only-toggle').checked;
+        if (isVegOnly) {
+            filtered = filtered.filter(i => i.type === 'veg');
+        }
+
+        renderMenu(filtered);
+    }
+
+    document.getElementById('veg-only-toggle').addEventListener('change', () => {
+        applyFiltersAndRender();
     });
 
     document.querySelectorAll('.category-item').forEach(catBtn => {
@@ -198,15 +218,15 @@ if (isMenuPage) {
                 b.style.background = 'white';
                 b.style.color = '#475569';
                 b.style.borderColor = '#CBD5E1';
+                b.classList.remove('active');
             });
             const btn = e.target;
             btn.style.background = '#0F172A';
             btn.style.color = 'white';
             btn.style.borderColor = '#0F172A';
+            btn.classList.add('active');
             
-            const category = btn.getAttribute('data-category');
-            if(category === 'all') renderMenu(menuData);
-            else renderMenu(menuData.filter(i => i.category === category));
+            applyFiltersAndRender();
         });
     });
 
@@ -347,18 +367,25 @@ if (isStatusPage) {
         document.getElementById('receipt-grand-total').innerText = `₹${data.totalAmount}`;
     }
 
+    // Fixed PDF Download with proper rendering delay to prevent blank pages
     const btnDownloadPdf = document.getElementById('btn-download-pdf');
     if(btnDownloadPdf){
         btnDownloadPdf.addEventListener('click', () => {
             const element = document.getElementById('invoice-receipt');
+            if (!element) return alert("Receipt not found!");
+
             const opt = {
                 margin: 0.2,
                 filename: `${orderId}_Bill.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true }, 
+                html2canvas: { scale: 2, useCORS: true, logging: false }, 
                 jsPDF: { unit: 'in', format: [3.5, 6], orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            // Small delay ensures DOM elements and receipt texts are fully loaded before capturing canvas
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save();
+            }, 300);
         });
     }
 }
