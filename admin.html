@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Indian Food Forest</title>
     
-    <!-- Google Fonts -->
+    <!-- Premium Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -21,35 +24,31 @@
 <body class="admin-body">
 
     <!-- ============================================== -->
-    <!-- 0. ADMIN SECURE LOGIN OVERLAY (100% BULLETPROOF) -->
+    <!-- 0. ADMIN SECURE LOGIN OVERLAY (REFRESH = RELOGIN) -->
     <!-- ============================================== -->
-    <div id="admin-login-screen" class="fullscreen-overlay" style="background: var(--primary-navy); z-index: 999999; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-        <div class="modal-card text-center shadow-lg" style="max-width: 360px; margin: 100px auto; padding: 30px; background: white; border-radius: 10px;">
-            <div class="logo-container mx-auto mb-3" style="width: 70px; height: 70px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-leaf text-success fa-2x"></i>
+    <div id="admin-login-screen" class="fullscreen-overlay" style="background: #0F172A; z-index: 999999; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+        <div class="modal-card text-center shadow-lg" style="width: 100%; max-width: 380px; padding: 40px 30px; background: white; border-radius: 16px;">
+            <div class="logo-container mx-auto mb-4" style="width: 80px; height: 80px; background: #F8FAFC; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <i class="fa-solid fa-leaf text-success fa-3x"></i>
             </div>
-            <h2 class="mb-2">Admin Portal</h2>
+            <h2 class="mb-2" style="color: #0F172A; font-weight: 700;">Admin Portal</h2>
             <p class="text-muted text-sm mb-4">Enter Master Passcode to access</p>
             
             <!-- FORM WRAPPER -->
             <form onsubmit="handleAdminLogin(event)">
-                <input type="password" id="admin-passcode" class="mx-auto" placeholder="••••" style="font-size: 28px; text-align: center; letter-spacing: 12px; font-weight: bold; padding: 12px; width: 200px; display: block; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; margin-bottom: 15px;" autocomplete="off" maxlength="4">
+                <input type="password" id="admin-passcode" class="mx-auto" placeholder="••••" style="font-size: 32px; text-align: center; letter-spacing: 16px; font-weight: bold; padding: 15px; width: 220px; display: block; border-radius: 12px; border: 2px solid #E2E8F0; outline: none; margin-bottom: 15px; color: #0F172A; transition: all 0.3s;" autocomplete="off" maxlength="4" autofocus>
                 
-                <p id="admin-login-error" class="text-danger text-sm mt-2" style="display: none;">Incorrect Passcode!</p>
+                <p id="admin-login-error" class="text-danger text-sm mt-2" style="display: none; font-weight: 500;">Incorrect Passcode!</p>
                 
-                <button type="submit" class="btn-primary btn-large w-100 mt-4">
+                <button type="submit" class="btn-primary btn-large w-100 mt-4" style="padding: 14px; border-radius: 10px; font-size: 16px;">
                     <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- DIRECT LOGIN SCRIPT -->
+    <!-- DIRECT LOGIN SCRIPT (No Session Storage = Forced Login on Refresh) -->
     <script>
-        if (sessionStorage.getItem('adminAuthenticated') === 'true') {
-            document.getElementById('admin-login-screen').style.setProperty('display', 'none', 'important');
-        }
-
         function handleAdminLogin(event) {
             event.preventDefault(); 
             var passInput = document.getElementById('admin-passcode').value.trim();
@@ -57,10 +56,11 @@
             var loginScreen = document.getElementById('admin-login-screen');
 
             if (passInput === '7860') {
-                sessionStorage.setItem('adminAuthenticated', 'true');
                 loginScreen.style.setProperty('display', 'none', 'important');
+                errorMsg.style.display = 'none';
             } else {
                 errorMsg.style.display = 'block';
+                document.getElementById('admin-passcode').value = '';
             }
         }
     </script>
@@ -69,8 +69,8 @@
     <!-- 1. SIDEBAR NAVIGATION -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <i class="fa-solid fa-leaf text-success"></i>
-            <h2>Admin Panel</h2>
+            <i class="fa-solid fa-leaf text-success" style="font-size: 24px;"></i>
+            <h2>Food Forest</h2>
         </div>
         
         <ul class="sidebar-nav">
@@ -78,10 +78,10 @@
                 <i class="fa-solid fa-border-all"></i> Live Floor Grid
             </li>
             <li class="nav-item" data-target="section-pos">
-                <i class="fa-solid fa-cash-register"></i> POS / Manual Order
+                <i class="fa-solid fa-cash-register"></i> POS System
             </li>
             <li class="nav-item" data-target="section-menu">
-                <i class="fa-solid fa-burger"></i> Menu & Stock
+                <i class="fa-solid fa-burger"></i> Menu Manager
             </li>
             <li class="nav-item" data-target="section-qr">
                 <i class="fa-solid fa-qrcode"></i> QR Generator
@@ -92,8 +92,8 @@
         </ul>
         
         <div class="sidebar-footer">
-            <button id="btn-logout" class="btn-outline-danger w-100">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            <button id="btn-logout" class="btn-outline-danger w-100" onclick="window.location.reload();">
+                <i class="fa-solid fa-right-from-bracket"></i> Secure Logout
             </button>
         </div>
     </aside>
@@ -103,11 +103,11 @@
         
         <!-- TOP APP BAR -->
         <header class="top-app-bar d-flex-between">
-            <h2 id="current-section-title">Live Floor Grid</h2>
+            <h2 id="current-section-title" style="font-weight: 600; color: #0F172A;">Live Floor Grid</h2>
             
             <div class="top-bar-actions">
                 <div id="waiter-alert-toast" class="alert-toast hidden">
-                    <i class="fa-solid fa-bell ringing"></i> <span id="waiter-alert-msg">Table 5 requested Water!</span>
+                    <i class="fa-solid fa-bell ringing"></i> <span id="waiter-alert-msg">Table requested Water!</span>
                 </div>
                 <div class="admin-profile">
                     <div class="avatar">A</div>
@@ -121,7 +121,7 @@
         <!-- ============================================== -->
         <section id="section-tables" class="admin-section active fade-in">
             <div class="section-header d-flex-between">
-                <p>Manage tables, view live orders, and approve payments.</p>
+                <p class="text-muted">Manage tables, view live orders, and approve payments.</p>
                 <div class="legend-box">
                     <span class="legend-item"><span class="dot green"></span> Free</span>
                     <span class="legend-item"><span class="dot red"></span> Occupied</span>
@@ -138,24 +138,24 @@
         <!-- ============================================== -->
         <section id="section-pos" class="admin-section hidden fade-in">
             <div class="section-header">
-                <p>Create manual orders for Walk-ins or Parcels directly to the Kitchen.</p>
+                <p class="text-muted">Create manual orders for Walk-ins or Parcels directly to the Kitchen.</p>
             </div>
             
             <!-- POS Split Layout -->
-            <div style="display: flex; gap: 20px; height: calc(100vh - 180px);">
+            <div style="display: flex; gap: 25px; height: calc(100vh - 190px);">
                 <!-- Menu Items List -->
-                <div style="flex: 2; overflow-y: auto; padding-right: 10px;">
+                <div style="flex: 2; overflow-y: auto; padding-right: 10px;" class="custom-scrollbar">
                     <div class="tables-grid" id="pos-menu-grid">
                         <!-- JS Injected POS Dish Cards -->
                     </div>
                 </div>
                 
                 <!-- Cart & Checkout Details -->
-                <div style="flex: 1; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; padding: 20px;">
-                    <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">Order Cart</h3>
+                <div style="flex: 1.2; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; display: flex; flex-direction: column; padding: 20px;">
+                    <h3 style="border-bottom: 2px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 15px; color: #0F172A;">Order Cart</h3>
                     
-                    <label class="text-sm text-muted">Select Table / Order Type</label>
-                    <select id="pos-table-select" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid var(--border-color); font-family: inherit;">
+                    <label class="text-sm text-muted mb-1" style="font-weight: 500;">Select Table / Order Type</label>
+                    <select id="pos-table-select" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #CBD5E1; font-family: inherit; font-size: 14px; outline: none; background: #F8FAFC;">
                         <option value="Parcel">Parcel / Takeaway</option>
                         <option value="1">Table 1</option>
                         <option value="2">Table 2</option>
@@ -174,21 +174,21 @@
                         <option value="15">Table 15</option>
                     </select>
 
-                    <div id="pos-cart-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
-                        <p class="text-muted text-center mt-4">Cart is empty</p>
+                    <div id="pos-cart-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;" class="custom-scrollbar">
+                        <p class="text-muted text-center mt-4"><i class="fa-solid fa-basket-shopping fa-2x mb-2" style="opacity: 0.5;"></i><br>Cart is empty</p>
                     </div>
 
-                    <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
-                        <div class="d-flex-between mb-3">
-                            <span>Grand Total</span>
-                            <strong id="pos-grand-total" style="font-size: 22px; color: var(--primary-blue);">₹0</strong>
+                    <div style="border-top: 2px dashed #E2E8F0; padding-top: 15px;">
+                        <div class="d-flex-between mb-4">
+                            <span style="font-size: 16px; font-weight: 500; color: #64748B;">Grand Total</span>
+                            <strong id="pos-grand-total" style="font-size: 26px; color: #2563EB;">₹0</strong>
                         </div>
                         <!-- BUTTONS: Send to Kitchen AND Print Bill -->
-                        <div style="display: flex; gap: 10px;">
-                            <button id="btn-pos-checkout" class="btn-success btn-large" style="flex: 1;">
-                                <i class="fa-solid fa-paper-plane"></i> Kitchen
+                        <div style="display: flex; gap: 12px;">
+                            <button id="btn-pos-checkout" class="btn-success btn-large" style="flex: 1.5; font-weight: 600; border-radius: 8px;">
+                                <i class="fa-solid fa-paper-plane"></i> Send to Kitchen
                             </button>
-                            <button id="btn-pos-print" class="btn-primary btn-large hidden" style="flex: 1;">
+                            <button id="btn-pos-print" class="btn-primary btn-large hidden" style="flex: 1; font-weight: 600; border-radius: 8px;">
                                 <i class="fa-solid fa-print"></i> Print Bill
                             </button>
                         </div>
@@ -196,23 +196,9 @@
                 </div>
             </div>
 
-            <!-- THERMAL BILL TEMPLATE FOR POS (HIDDEN ON SCREEN) -->
-            <div id="pos-print-receipt" style="display: none; font-family: monospace; padding: 20px; width: 300px; color: black; background: white;">
-                <div style="text-align: center; border-bottom: 1px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h2 style="margin: 0;">Indian Food Forest</h2>
-                    <p style="margin: 5px 0 0 0; font-size: 12px;">POS Order / Parcel</p>
-                    <p id="pos-receipt-date" style="margin: 0; font-size: 12px;"></p>
-                </div>
-                <table style="width: 100%; text-align: left; font-size: 14px; border-bottom: 1px dashed black; margin-bottom: 10px;">
-                    <thead><tr><th>Item</th><th>Qty</th><th style="text-align: right;">Total</th></tr></thead>
-                    <tbody id="pos-receipt-items"></tbody>
-                </table>
-                <div style="text-align: right; font-size: 16px; font-weight: bold;">
-                    Grand Total: <span id="pos-receipt-total">₹0</span>
-                </div>
-                <div style="text-align: center; margin-top: 15px; font-size: 12px;">
-                    Thank you! Please visit again.
-                </div>
+            <!-- THERMAL BILL TEMPLATE FOR POS (HIDDEN ON SCREEN, REVEALED IN JS FOR PRINT) -->
+            <div id="pos-print-receipt" style="display: none;">
+                <!-- This will be dynamically populated in admin-app.js for exactly 80mm width -->
             </div>
         </section>
 
@@ -221,16 +207,16 @@
         <!-- ============================================== -->
         <section id="section-menu" class="admin-section hidden fade-in">
             <div class="section-header d-flex-between">
-                <p>Add, edit prices, upload images, and toggle out-of-stock items.</p>
-                <button id="btn-open-add-modal" class="btn-primary">
+                <p class="text-muted">Add, edit prices, upload images, and toggle out-of-stock items.</p>
+                <button id="btn-open-add-modal" class="btn-primary" style="padding: 10px 20px; border-radius: 8px;">
                     <i class="fa-solid fa-plus"></i> Add New Dish
                 </button>
             </div>
 
             <!-- Menu Table -->
-            <div class="table-responsive bg-white rounded shadow-sm">
+            <div class="table-responsive bg-white rounded shadow-sm" style="border: 1px solid #E2E8F0;">
                 <table class="data-table w-100">
-                    <thead>
+                    <thead style="background: #F8FAFC;">
                         <tr>
                             <th>Image</th>
                             <th>Dish Name</th>
@@ -248,27 +234,41 @@
         </section>
 
         <!-- ============================================== -->
-        <!-- SECTION D: QR CODE GENERATOR -->
+        <!-- SECTION D: QR CODE GENERATOR (Single & Bulk) -->
         <!-- ============================================== -->
         <section id="section-qr" class="admin-section hidden fade-in">
-            <div class="card-white mx-auto text-center" style="max-width: 600px;">
-                <i class="fa-solid fa-qrcode fa-3x text-primary mb-2"></i>
-                <h3>Bulk QR Code Generator</h3>
-                <p class="text-muted mb-3">Generate print-ready QR codes for all tables with dynamic secure tokens.</p>
+            <div class="card-white mx-auto text-center" style="max-width: 700px; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;">
+                <div style="width: 70px; height: 70px; background: #EFF6FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fa-solid fa-qrcode fa-2x text-primary"></i>
+                </div>
+                <h3 style="font-size: 24px; margin-bottom: 10px;">Secure QR Code Generator</h3>
+                <p class="text-muted mb-4">Generate permanent print-ready QR codes for your tables.</p>
                 
-                <div class="input-group-inline justify-center mb-4">
-                    <label>Generate QR for Tables: 1 to </label>
-                    <input type="number" id="qr-table-count" value="15" min="1" max="100" class="input-sm">
-                    <button id="btn-generate-qrs" class="btn-primary">Generate</button>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+                    <!-- Bulk Generator -->
+                    <div class="input-group-inline justify-center mb-3">
+                        <label style="font-weight: 500; color: #0F172A;">Bulk QR (1 to N): </label>
+                        <input type="number" id="qr-table-count" value="15" min="1" max="100" class="input-sm" style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid #CBD5E1;">
+                        <button id="btn-generate-qrs" class="btn-primary" style="padding: 8px 20px; border-radius: 6px;">Load All</button>
+                    </div>
+
+                    <div style="width: 100%; height: 1px; background: #E2E8F0; margin: 20px 0;"></div>
+
+                    <!-- Single Table Generator -->
+                    <div class="input-group-inline justify-center">
+                        <label style="font-weight: 500; color: #0F172A;">Add Single Table No: </label>
+                        <input type="text" id="qr-single-table" placeholder="e.g. 16" class="input-sm" style="width: 100px; padding: 8px; border-radius: 6px; border: 1px solid #CBD5E1;">
+                        <button id="btn-generate-single" class="btn-secondary" style="padding: 8px 20px; border-radius: 6px;">Generate Single</button>
+                    </div>
                 </div>
 
-                <div class="qr-print-actions hidden" id="qr-actions-box">
-                    <button id="btn-print-qrs" class="btn-secondary">
+                <div class="qr-print-actions hidden" id="qr-actions-box" style="margin-bottom: 30px;">
+                    <button id="btn-print-qrs" class="btn-success btn-large" style="padding: 12px 30px; border-radius: 8px; font-weight: 600;">
                         <i class="fa-solid fa-print"></i> Print QR Sheets
                     </button>
                 </div>
 
-                <div id="qr-display-grid" class="qr-grid mt-4"></div>
+                <div id="qr-display-grid" class="qr-grid mt-4" style="background: white;"></div>
             </div>
         </section>
 
@@ -276,72 +276,86 @@
         <!-- SECTION E: SALES REPORTS & ANALYTICS -->
         <!-- ============================================== -->
         <section id="section-reports" class="admin-section hidden fade-in">
-            <div class="section-header d-flex-between">
-                <div class="date-filter-group">
-                    <label>Select Date: </label>
-                    <input type="date" id="report-date-picker" class="input-date">
-                    <button id="btn-fetch-report" class="btn-primary btn-sm">Load</button>
+            <div class="section-header d-flex-between" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px;">
+                <div class="date-filter-group" style="display: flex; align-items: center; gap: 15px;">
+                    <label style="font-weight: 600; color: #0F172A;">Select Date: </label>
+                    <input type="date" id="report-date-picker" class="input-date" style="padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1; outline: none; font-family: inherit;">
+                    <button id="btn-fetch-report" class="btn-primary" style="padding: 10px 20px; border-radius: 8px;">Load Data</button>
                 </div>
                 <div class="report-actions">
-                    <button id="btn-export-csv" class="btn-outline-success">
+                    <button id="btn-export-csv" class="btn-outline-success" style="padding: 10px 20px; border-radius: 8px; background: #DCFCE7; border: 1px solid #16A34A; color: #16A34A; font-weight: 600;">
                         <i class="fa-solid fa-file-csv"></i> Export CSV
                     </button>
                 </div>
             </div>
 
-            <!-- Stats Cards (UPDATED FOR PROFIT & EXPENSE) -->
+            <!-- Stats Cards (Revenue, Expense, Profit, Orders) -->
             <div class="stats-grid mt-3">
-                <div class="stat-card">
+                <div class="stat-card" style="border: 1px solid #E2E8F0;">
                     <div class="stat-icon bg-blue"><i class="fa-solid fa-indian-rupee-sign"></i></div>
                     <div class="stat-details">
                         <p>Total Revenue</p>
-                        <h3 id="stat-revenue">₹0</h3>
+                        <h3 id="stat-revenue" style="color: #0F172A;">₹0</h3>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background:#FEE2E2; color:#EF4444;"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                <div class="stat-card" style="border: 1px solid #E2E8F0;">
+                    <div class="stat-icon" style="background:#FEE2E2; color:#DC2626;"><i class="fa-solid fa-arrow-trend-down"></i></div>
                     <div class="stat-details">
                         <p>Total Expense</p>
-                        <h3 id="stat-expense">₹0</h3>
+                        <h3 id="stat-expense" style="color: #0F172A;">₹0</h3>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="border: 1px solid #E2E8F0;">
                     <div class="stat-icon bg-green"><i class="fa-solid fa-wallet"></i></div>
                     <div class="stat-details">
                         <p>Net Profit</p>
-                        <h3 id="stat-profit">₹0</h3>
+                        <h3 id="stat-profit" style="color: #0F172A;">₹0</h3>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="border: 1px solid #E2E8F0;">
                     <div class="stat-icon bg-orange"><i class="fa-solid fa-fire"></i></div>
                     <div class="stat-details">
                         <p>Total Orders</p>
-                        <h3 id="stat-orders">0</h3>
+                        <h3 id="stat-orders" style="color: #0F172A;">0</h3>
                     </div>
                 </div>
             </div>
 
-            <!-- ================= NEW DAILY EXPENSE LOG UI ================= -->
-            <div class="mt-4 p-4 rounded bg-white shadow-sm border" style="max-width: 800px;">
-                <h4 style="border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">
-                    <i class="fa-solid fa-money-bill-transfer text-danger"></i> Daily Expense Log
-                </h4>
-                <p class="text-sm text-muted mb-3">Record daily expenses like vegetables, staff salary, maintenance, etc.</p>
+            <!-- Daily Expense Log & Chart Row -->
+            <div style="display: flex; gap: 25px; margin-top: 30px; flex-wrap: wrap;">
                 
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="expense-desc" placeholder="Expense Details (E.g., Sabzi, Salary...)" style="flex: 2; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none;">
-                    <input type="number" id="expense-amount" placeholder="Amount (₹)" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none;">
-                    <button id="btn-add-expense" class="btn-danger" style="padding: 10px 20px; border-radius: 5px;">Add</button>
+                <!-- Daily Expense UI -->
+                <div class="mt-2 p-4 rounded bg-white shadow-sm border" style="flex: 1; min-width: 350px; border: 1px solid #E2E8F0; border-radius: 12px;">
+                    <h4 style="border-bottom: 2px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 15px; color: #0F172A;">
+                        <i class="fa-solid fa-money-bill-transfer text-danger"></i> Daily Expense Log
+                    </h4>
+                    <p class="text-sm text-muted mb-4">Record expenses like raw material, salary, etc.</p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="expense-desc" placeholder="Expense Details..." style="flex: 2; padding: 12px; border: 1px solid #CBD5E1; border-radius: 8px; outline: none; font-family: inherit;">
+                        <input type="number" id="expense-amount" placeholder="Amount (₹)" style="flex: 1; padding: 12px; border: 1px solid #CBD5E1; border-radius: 8px; outline: none; font-family: inherit;">
+                        <button id="btn-add-expense" class="btn-danger" style="padding: 12px 20px; border-radius: 8px; font-weight: 600;">Add</button>
+                    </div>
+                    
+                    <h5 class="mb-2" style="color: #475569;">Expenses for Selected Date</h5>
+                    <div id="expense-list-container" class="text-sm text-muted custom-scrollbar" style="max-height: 200px; overflow-y: auto; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; background: #F8FAFC;">
+                        <!-- JS Injected Expenses Will Appear Here -->
+                        <p class="text-center mt-2">No expenses recorded yet.</p>
+                    </div>
                 </div>
-                
-                <h5 class="mt-4 mb-2">Expenses for Selected Date</h5>
-                <div id="expense-list-container" class="text-sm text-muted" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 5px; padding: 10px; background: #f8fafc;">
-                    <!-- JS Injected Expenses Will Appear Here -->
-                    <p class="text-center mt-2">No expenses recorded yet.</p>
-                </div>
-            </div>
-            <!-- ============================================================= -->
 
+                <!-- Top Selling Items Chart -->
+                <div class="mt-2 p-4 rounded bg-white shadow-sm border" style="flex: 1; min-width: 350px; border: 1px solid #E2E8F0; border-radius: 12px;">
+                    <h4 style="border-bottom: 2px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 15px; color: #0F172A;">
+                        <i class="fa-solid fa-chart-pie text-primary"></i> Top Selling Items (Qty)
+                    </h4>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <p class="text-center text-sm text-muted mt-3">Highest Selling Item: <strong id="stat-top-item" style="color: #0F172A;">--</strong></p>
+                </div>
+
+            </div>
         </section>
         
     </main>
@@ -349,51 +363,51 @@
     <!-- ============================================== -->
     <!-- MODALS (Dish Upload) -->
     <!-- ============================================== -->
-    <div id="add-dish-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header d-flex-between">
-                <h3>Add / Edit Dish</h3>
-                <button id="btn-close-dish-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+    <div id="add-dish-modal" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-card" style="width: 100%; max-width: 500px; padding: 30px; border-radius: 16px;">
+            <div class="modal-header d-flex-between" style="border-bottom: 2px solid #F1F5F9; padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="color: #0F172A;">Add / Edit Dish</h3>
+                <button id="btn-close-dish-modal" class="btn-icon" style="background: #F1F5F9; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="modal-body">
                 <form id="dish-upload-form" onsubmit="return false;">
                     <div class="input-group">
-                        <label>Dish Name</label>
-                        <input type="text" id="input-dish-name" required placeholder="e.g. Paneer Tikka">
+                        <label style="font-weight: 500; color: #475569;">Dish Name</label>
+                        <input type="text" id="input-dish-name" required placeholder="e.g. Paneer Tikka" style="padding: 12px; border-radius: 8px;">
                     </div>
                     
-                    <div class="row-2">
-                        <div class="input-group">
-                            <label>Category</label>
-                            <select id="input-dish-category" required>
+                    <div class="row-2" style="display: flex; gap: 15px;">
+                        <div class="input-group" style="flex: 1;">
+                            <label style="font-weight: 500; color: #475569;">Category</label>
+                            <select id="input-dish-category" required style="padding: 12px; border-radius: 8px;">
                                 <option value="starters">Starters</option>
                                 <option value="main-course">Main Course</option>
                                 <option value="beverages">Beverages</option>
                                 <option value="desserts">Desserts</option>
                             </select>
                         </div>
-                        <div class="input-group">
-                            <label>Price (₹)</label>
-                            <input type="number" id="input-dish-price" required placeholder="250">
+                        <div class="input-group" style="flex: 1;">
+                            <label style="font-weight: 500; color: #475569;">Price (₹)</label>
+                            <input type="number" id="input-dish-price" required placeholder="250" style="padding: 12px; border-radius: 8px;">
                         </div>
                     </div>
                     
                     <div class="input-group">
-                        <label>Food Type</label>
-                        <select id="input-dish-type">
-                            <option value="veg">Vegetarian</option>
-                            <option value="non-veg">Non-Vegetarian</option>
+                        <label style="font-weight: 500; color: #475569;">Food Type</label>
+                        <select id="input-dish-type" style="padding: 12px; border-radius: 8px;">
+                            <option value="veg">Vegetarian (Green)</option>
+                            <option value="non-veg">Non-Vegetarian (Red)</option>
                         </select>
                     </div>
 
-                    <div class="input-group">
-                        <label>Image Upload (Direct to Cloudinary)</label>
-                        <input type="file" id="input-dish-image" accept="image/*" class="file-input">
-                        <p class="help-text text-muted text-sm mt-1">Leave empty to keep existing/placeholder image.</p>
+                    <div class="input-group" style="background: #F8FAFC; padding: 15px; border: 1px dashed #CBD5E1; border-radius: 8px;">
+                        <label style="font-weight: 500; color: #475569;">Image Upload (Cloudinary)</label>
+                        <input type="file" id="input-dish-image" accept="image/*" class="file-input" style="border: none; padding: 0; background: transparent;">
+                        <p class="help-text text-muted text-sm mt-1" style="font-size: 12px;">Leave empty to keep existing image.</p>
                     </div>
                     
-                    <button type="submit" id="btn-save-dish" class="btn-primary w-100 mt-3">
+                    <button type="submit" id="btn-save-dish" class="btn-primary w-100 mt-3" style="padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600;">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish
                     </button>
                 </form>
@@ -401,7 +415,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Files (Dono files add kar di hain yahan) -->
+    <!-- JavaScript Files (ES6 Modules) -->
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/admin-app.js"></script>
     <script type="module" src="js/reports-app.js"></script>
