@@ -1,5 +1,5 @@
 // ==========================================================================
-// ADMIN DASHBOARD LOGIC (Grid, POS, Menu, KDS Sync, QR Gen, 80mm Print)
+// ADMIN DASHBOARD LOGIC (Grid, POS, Menu Manager with Edit, QR, 80mm Print)
 // ==========================================================================
 
 import { db } from "./firebase-config.js";
@@ -30,7 +30,6 @@ navItems.forEach(item => {
         if (targetSection) targetSection.classList.remove('hidden');
         if (sectionTitle) sectionTitle.innerText = item.innerText;
 
-        // Auto-load reports if Reports tab is clicked
         if (targetId === 'section-reports' && typeof window.loadReport === 'function') {
             window.loadReport();
         }
@@ -38,7 +37,7 @@ navItems.forEach(item => {
 });
 
 // ==========================================================================
-// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT
+// 2. CLOUDINARY UPLOAD & MENU MANAGEMENT (WITH EDIT SUPPORT)
 // ==========================================================================
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/z2hgv1bk/image/upload';
 const UPLOAD_PRESET = 'indian_food_preset'; 
@@ -52,6 +51,7 @@ const dishUploadForm = document.getElementById('dish-upload-form');
 if (btnOpenAddModal) {
     btnOpenAddModal.addEventListener('click', () => {
         if (dishUploadForm) dishUploadForm.reset();
+        document.getElementById('input-dish-name').removeAttribute('readonly'); // Ensure name is editable for new items
         if (modalAddDish) modalAddDish.classList.remove('hidden');
     });
 }
@@ -67,7 +67,7 @@ if (dishUploadForm) {
         e.preventDefault();
         
         if (btnSaveDish) {
-            btnSaveDish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+            btnSaveDish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
             btnSaveDish.disabled = true;
         }
 
@@ -78,7 +78,7 @@ if (dishUploadForm) {
         const imageFileInput = document.getElementById('input-dish-image');
         const imageFile = imageFileInput ? imageFileInput.files[0] : null;
 
-        let imageUrl = null;
+        let imageUrl = document.getElementById('input-dish-image').getAttribute('data-existing-url') || null;
 
         try {
             if (imageFile) {
@@ -91,20 +91,21 @@ if (dishUploadForm) {
                 imageUrl = cloudData.secure_url; 
             }
 
-            const dishId = name.toLowerCase().replace(/\s+/g, '-'); 
+            const dishId = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'); 
             
             const dishData = {
                 name, category, price, type,
                 isAvailable: true,
+                imageUrl: imageUrl || "",
                 timestamp: new Date().toISOString()
             };
-            
-            if (imageUrl) dishData.imageUrl = imageUrl;
 
             await setDoc(doc(db, "menu", dishId), dishData, { merge: true });
             
             alert("Dish saved successfully!");
             if (modalAddDish) modalAddDish.classList.add('hidden');
+            dishUploadForm.reset();
+            document.getElementById('input-dish-image').removeAttribute('data-existing-url');
         } catch (error) {
             console.error("Upload Error:", error);
             alert("Error saving dish.");
@@ -133,18 +134,20 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
 
         if (tbody) {
             const tr = document.createElement('tr');
-            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;">` : '<i class="fa-solid fa-image text-muted fa-2x"></i>';
+            const img = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : '<span style="font-size:11px; color:#64748B;">No Img</span>';
             const stockBtn = item.isAvailable 
-                ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Mark Out of Stock</button>`
-                : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">Mark In Stock</button>`;
+                ? `<button class="btn-sm btn-outline-danger" onclick="toggleStock('${item.id}', false)">Out</button>`
+                : `<button class="btn-sm btn-outline-success" onclick="toggleStock('${item.id}', true)">In</button>`;
+
+            const editBtn = `<button class="btn-sm btn-outline-primary" onclick="editDish('${item.id}')" style="margin-right: 5px;"><i class="fa-solid fa-pen"></i></button>`;
 
             tr.innerHTML = `
                 <td>${img}</td>
                 <td><strong style="color: #0F172A;">${item.name}</strong><br><small class="${item.type==='veg'?'text-success':'text-danger'}"><i class="fa-solid fa-circle"></i> ${item.type.toUpperCase()}</small></td>
                 <td>${item.category.toUpperCase()}</td>
                 <td style="font-weight: 600;">₹${item.price}</td>
-                <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'IN STOCK' : 'OUT'}</span></td>
-                <td>${stockBtn}</td>
+                <td><span class="status-badge ${item.isAvailable ? 'paid' : 'occupied'}">${item.isAvailable ? 'ACTIVE' : 'OUT'}</span></td>
+                <td>${editBtn} ${stockBtn}</td>
             `;
             tbody.appendChild(tr);
         }
@@ -169,6 +172,22 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
 
 window.toggleStock = async function(id, status) {
     await updateDoc(doc(db, "menu", id), { isAvailable: status });
+};
+
+// Global Edit Dish Function
+window.editDish = function(id) {
+    const item = globalMenuData.find(i => i.id === id);
+    if (!item) return;
+
+    document.getElementById('input-dish-name').value = item.name;
+    document.getElementById('input-dish-category').value = item.category;
+    document.getElementById('input-dish-price').value = item.price;
+    document.getElementById('input-dish-type').value = item.type;
+    
+    // Store existing image URL temporarily
+    document.getElementById('input-dish-image').setAttribute('data-existing-url', item.imageUrl || '');
+    
+    document.getElementById('add-dish-modal').classList.remove('hidden');
 };
 
 // ==========================================================================
